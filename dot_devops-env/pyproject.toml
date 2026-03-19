@@ -1,0 +1,40 @@
+[project]
+name = "devops-env"
+version = "0.1.0"
+description = "Managed Python environment for DevOps workstation utilities"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    # Automation and infrastructure
+    "ansible-core==2.16.14",
+    "hvac==2.4.0",
+    "jira==3.10.5",
+    "kubernetes>=34.1.0",
+    "mysql-connector-python==9.5.0",
+    "openpyxl==3.1.5",
+    "prometheus-api-client==0.6.0",
+    "confluent-kafka==2.12.1",
+    "redis==5.0.0",
+    "rdbtools==0.1.15",
+    "sentry-sdk==2.43.0",
+    # Data and serialization
+    "requests>=2.31",
+    "pytz>=2024.1",
+    "pyyaml==6.0.2",
+    "jq==1.8.0",
+    "yq==3.4.3",
+    "xmltodict==0.14.2",
+    "lz4==4.4.4",
+    "zstandard==0.18.0",
+    "toolz==0.12.0",
+    "tqdm>=4.66",
+    "packaging==25.0",
+    "tomlkit==0.13.2",
+    "jinja2==3.1.6",
+    # Local experimentation
+    "neural-memory>=2.23.0",
+    "kioku-lite[cli]",
+]
+
+[tool.uv]
+package = false

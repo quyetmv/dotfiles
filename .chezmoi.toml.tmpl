@@ -1,0 +1,58 @@
+{{- $interactive := not (or (env "CI") (env "GITHUB_ACTIONS")) -}}
+
+{{- $email := env "CHEZMOI_GIT_EMAIL" -}}
+{{- if and (not $email) $interactive -}}
+{{-   $email = promptString "Git email address (Personal)" -}}
+{{- end -}}
+
+{{- $name := env "CHEZMOI_GIT_NAME" -}}
+{{- if and (not $name) $interactive -}}
+{{-   $name = promptString "Git full name (Personal)" -}}
+{{- end -}}
+
+{{- $githubUser := env "CHEZMOI_GITHUB_USER" -}}
+{{- if and (not $githubUser) $interactive -}}
+{{-   $githubUser = promptString "GitHub username (Personal)" -}}
+{{- end -}}
+
+{{- $workConfigs := list -}}
+{{- if $interactive -}}
+{{-   $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
+{{-   range $i := until $workCount -}}
+{{-     $idx := add $i 1 -}}
+{{-     $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
+{{-     $email := promptString (printf "Git email address for Work %d" $idx) -}}
+{{-     $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
+{{-     $workConfigs = append $workConfigs (dict "dir" $dir "email" $email "name" $name) -}}
+{{-   end -}}
+{{- else -}}
+{{/* Fallback to env vars for CI/non-interactive mode */}}
+{{-   $workGitDir := env "CHEZMOI_WORK_GIT_DIR" -}}
+{{-   if $workGitDir -}}
+{{-     $workEmail := env "CHEZMOI_WORK_GIT_EMAIL" -}}
+{{-     $workName := env "CHEZMOI_WORK_GIT_NAME" -}}
+{{-     $workConfigs = append $workConfigs (dict "dir" $workGitDir "email" $workEmail "name" $workName) -}}
+{{-   end -}}
+{{- end -}}
+
+[data]
+    email = {{ printf "%q" $email }}
+    github_user = {{ printf "%q" $githubUser }}
+    name = {{ printf "%q" $name }}
+    
+    # Work Configurations
+    work_configs = [
+        {{- range $i, $config := $workConfigs }}
+        { dir = {{ printf "%q" $config.dir }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }} },
+        {{- end }}
+    ]
+    enable_dock = {{ eq (env "CHEZMOI_ENABLE_DOCK") "1" }}
+    enable_mas_apps = {{ eq (env "CHEZMOI_ENABLE_MAS_APPS") "1" }}
+    enable_personal_apps = {{ eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1" }}
+    enable_ssh_keygen = {{ eq (env "CHEZMOI_ENABLE_SSH_KEYGEN") "1" }}
+
+[apply]
+    backup = true
+
+[edit]
+    command = "nvim"

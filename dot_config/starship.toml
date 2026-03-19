@@ -1,0 +1,58 @@
+# Starship Configuration
+# Full documentation: https://starship.rs/config/
+
+add_newline = false
+
+# Use a custom format for the whole prompt
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$kubernetes\
+$aws\
+$terraform\
+$python\
+$node\
+$cmd_duration\
+$line_break\
+$character"""
+
+[directory]
+style = "bold cyan"
+truncate_to_repo = true
+truncation_length = 3
+truncation_symbol = "…/"
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "red"
+
+[kubernetes]
+disabled = false
+format = 'on [⛵ $context \($namespace\)](bold blue) '
+
+[aws]
+format = 'on [󰸏 $profile \($region\)]($style) '
+style = "bold yellow"
+
+[terraform]
+format = 'via [󱁢 $version]($style) '
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration]($style) "
+
+[python]
+symbol = "🐍 "
+
+[nodejs]
+symbol = " "

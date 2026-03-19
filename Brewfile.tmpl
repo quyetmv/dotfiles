@@ -1,0 +1,79 @@
+{{ $enable_mas_apps := or (index . "enable_mas_apps") (eq (env "CHEZMOI_ENABLE_MAS_APPS") "1") -}}
+{{ $enable_personal_apps := or (index . "enable_personal_apps") (eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1") -}}
+
+# Core CLI and shell dependencies
+brew "atuin"
+brew "bash"
+brew "bash-completion2"
+brew "bat"
+brew "chezmoi"
+brew "coreutils"
+brew "eza"
+brew "fastfetch"
+brew "fd"
+brew "findutils"
+brew "fzf"
+brew "git"
+brew "git-delta"
+brew "gnu-sed"
+brew "gnupg"
+brew "http-server"
+brew "lazygit"
+brew "lsd"
+brew "mise"
+brew "moreutils"
+brew "mysql-client"
+brew "neovim"
+brew "powerlevel10k"
+brew "redis"
+brew "ripgrep"
+brew "starship"
+brew "stylua"
+brew "tealdeer"
+brew "tmux"
+brew "watch"
+brew "wget"
+brew "z"
+brew "zoxide"
+brew "zsh-autosuggestions"
+brew "zsh-completions"
+brew "zsh-syntax-highlighting"
+
+{{ if eq .chezmoi.os "darwin" -}}
+# macOS-only Homebrew formulas
+{{ if $enable_mas_apps -}}
+brew "mas"
+{{ end -}}
+
+# Fonts
+cask "font-hack-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+
+# Productivity and development apps
+cask "antigravity"
+cask "devtoys"
+cask "dbeaver-community"
+cask "docker-desktop"
+cask "google-chrome"
+cask "brave-browser"
+cask "iterm2"
+cask "notion"
+cask "nosqlbooster-for-mongodb"
+cask "pgadmin4"
+cask "postman"
+cask "rectangle"
+cask "slack"
+cask "todoist-app"
+{{ if $enable_personal_apps -}}
+cask "evkey"
+cask "sublime-text"
+cask "telegram"
+{{ end -}}
+cask "visual-studio-code"
+
+# Optional Mac App Store utilities
+{{ if $enable_mas_apps -}}
+mas "Amphetamine", id: 937984704
+mas "The Unarchiver", id: 425424353
+{{ end -}}
+{{ end -}}

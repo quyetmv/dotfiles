@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+{{ if not (index . "enable_ssh_keygen") }}
+echo "ℹ Skipping SSH key generation (set CHEZMOI_ENABLE_SSH_KEYGEN=1 to enable)"
+exit 0
+{{ end }}
+
+if [ -f "$HOME/.ssh/id_ed25519" ]; then
+    exit 0
+fi
+
+{{ if not (env "CI") }}
+if [ ! -t 0 ]; then
+    echo "⚠ No TTY available — skipping SSH key generation. Run manually:"
+    echo "  ssh-keygen -t ed25519 -C \"your@email.com\""
+    exit 0
+fi
+
+printf "SSH key email: "
+read -r ssh_email
+
+ssh-keygen -t ed25519 -C "$ssh_email" -f "$HOME/.ssh/id_ed25519" -N ""
+
+echo "✓ SSH key generated"
+echo ""
+echo "Add this public key to GitHub (https://github.com/settings/ssh/new):"
+echo ""
+cat "$HOME/.ssh/id_ed25519.pub"
+{{ end }}

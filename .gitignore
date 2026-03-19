@@ -1,0 +1,89 @@
+# Compiled Python files
+*.pyc
+
+# Folder view configuration files
+.DS_Store
+Desktop.ini
+
+# Thumbnail cache files
+._*
+Thumbs.db
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+# Neovim
+.netrwhist
+nvim/.config/*
+!nvim/.config/nvim
+!nvim/.config/ghostty
+
+# ZSH
+.private
+
+# Claude
+claude/
+skills/
+skills-lock.json
+.adal/
+.agent/
+.agents/
+.augment/
+.claude/
+.cline/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
+# Chezmoi - prevent work data leaks
+chezmoi/.work-*
+chezmoi/**/*-work*
+chezmoi/**/*corp*
+chezmoi/**/*company*
+*.local
+*.private
+*-work.*
+*-corp.*
+!dot_gitconfig-work.tmpl
+
+# Machine-specific generated files (local only, not in repo)
+/.chezmoi.yaml
+/.chezmoi.toml
+/.chezmoi.json
+/chezmoistate.boltdb
+
+# Local reference clones / scratch repos kept beside this repo
+/dotfiles/
+/references/
+
+# Secrets and credentials (paranoid mode)
+**/*secret*
+**/*credential*
+**/*password*
+**/*token*
+**/.env
+**/.env.*
+!**/.env.example

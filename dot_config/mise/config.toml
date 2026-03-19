@@ -1,0 +1,7 @@
+# Global mise behavior only.
+# Tool versions are sourced from ~/.tool-versions managed by chezmoi.
+
+[settings]
+auto_install = true
+# Auto-detect versions from project files
+idiomatic_version_file_enable_tools = ["node", "go", "python"]

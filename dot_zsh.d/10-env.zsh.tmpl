@@ -1,0 +1,31 @@
+# neovim as default
+export EDITOR="nvim"
+export VISUAL="$EDITOR"
+
+# Prefer US English and use UTF-8
+if command -v locale >/dev/null 2>&1 && locale -a 2>/dev/null | grep -qi '^en_US\.utf-8$'; then
+    export LANG="en_US.UTF-8"
+    export LC_ALL="en_US.UTF-8"
+elif command -v locale >/dev/null 2>&1 && locale -a 2>/dev/null | grep -qi '^c\.utf-8$'; then
+    export LANG="C.UTF-8"
+    unset LC_ALL
+else
+    # Fallback to C and ensure no LC_ALL is set to avoid warnings
+    export LANG="C"
+    unset LC_ALL
+fi
+
+# Network helper variables
+{{- if eq .chezmoi.os "darwin" }}
+alias iplocal="ipconfig getifaddr en0"
+{{- else }}
+alias iplocal="hostname -I | awk '{print \$1}'"
+alias ips="hostname -I"
+{{- end }}
+
+# File size
+{{- if eq .chezmoi.os "darwin" }}
+alias fs="stat -f \"%z bytes\""
+{{- else }}
+alias fs="stat -c \"%s bytes\""
+{{- end }}

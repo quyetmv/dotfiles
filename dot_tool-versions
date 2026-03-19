@@ -1,0 +1,39 @@
+# Version-pinned runtimes and DevOps CLIs managed by mise.
+# OS packages, GUI apps, and shell dependencies live in Brewfile.
+# Python project dependencies belong in each repo's pyproject.toml + uv.lock.
+
+# Core languages and Python workflow
+node 22.21.0
+python 3.12
+go 1.24
+uv latest
+
+# Infrastructure and cloud
+terraform 1.11
+terraform-docs 0.20
+terragrunt 0.77
+kubectl 1.32
+helm 3.17
+kustomize 5.6
+awscli 2
+sops 3.10
+age 1.2
+vault latest
+k9s latest
+infracost latest
+lazydocker latest
+kubectx latest
+kubens latest
+kubecm latest
+lazygit latest
+bat latest
+lsd latest
+
+# Versioned CLI utilities
+
+jq 1.7
+yq 4.45
+shellcheck 0.10
+shfmt 3.11
+yamllint 1.37
+pre-commit 4.2

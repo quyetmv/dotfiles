@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# VS Code Font Configuration Script
+# This script is managed by chezmoi and sets the terminal font for VS Code.
+
+set -euo pipefail
+
+log_info() { echo -e "\033[34m[INFO]\033[0m $*"; }
+
+FONT_NAME="MesloLGS NF"
+
+configure_vscode_font() {
+    local settings_file="$1"
+
+    if [[ -f "$settings_file" ]] && command -v jq >/dev/null 2>&1; then
+        log_info "Configuring VS Code terminal font in $settings_file..."
+        
+        # Check if the setting is already correct to avoid unnecessary writes
+        local current_font
+        current_font=$(jq -r '.["terminal.integrated.fontFamily"] // empty' "$settings_file")
+        
+        if [[ "$current_font" != "$FONT_NAME" ]]; then
+            # Create a backup
+            cp "$settings_file" "${settings_file}.bak"
+            
+            # Apply the new font setting
+            jq --arg font "$FONT_NAME" '.["terminal.integrated.fontFamily"] = $font' "$settings_file" > "${settings_file}.tmp"
+            mv "${settings_file}.tmp" "$settings_file"
+            log_info "VS Code terminal font updated."
+        fi
+    elif [[ -d "$(dirname "$settings_file")" ]] && command -v jq >/dev/null 2>&1; then
+        log_info "Creating VS Code settings.json with terminal font..."
+        echo "{ \"terminal.integrated.fontFamily\": \"$FONT_NAME\" }" > "$settings_file"
+    fi
+}
+
+# Windows Terminal / WSL VS Code Server settings
+configure_vscode_font "$HOME/.vscode-server/data/Machine/settings.json"
+
+# Linux Desktop VS Code settings
+configure_vscode_font "$HOME/.config/Code/User/settings.json"
+
+# macOS VS Code settings
+configure_vscode_font "$HOME/Library/Application Support/Code/User/settings.json"

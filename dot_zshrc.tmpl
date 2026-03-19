@@ -1,0 +1,172 @@
+# Homebrew configuration (macOS only)
+# Note: zprofile already runs `brew shellenv` for login shells.
+# We guard here to avoid a double-eval and the ~15ms startup penalty.
+{{- if eq .chezmoi.os "darwin" }}
+export HOMEBREW_PREFIX="/opt/homebrew"
+if [[ -z "${HOMEBREW_CELLAR:-}" && -d "$HOMEBREW_PREFIX/bin" ]]; then
+  eval "$($HOMEBREW_PREFIX/bin/brew shellenv)"
+fi
+{{- end }}
+
+# Enable Powerlevel10k instant prompt (keep this at the top)
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Powerlevel10k theme
+{{- if eq .chezmoi.os "darwin" }}
+[[ -r "$HOMEBREW_PREFIX/share/powerlevel10k/powerlevel10k.zsh-theme" ]] && source "$HOMEBREW_PREFIX/share/powerlevel10k/powerlevel10k.zsh-theme"
+{{- else if eq .chezmoi.os "linux" }}
+P10K_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+[[ -r "$P10K_DIR/powerlevel10k.zsh-theme" ]] && source "$P10K_DIR/powerlevel10k.zsh-theme"
+{{- end }}
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+
+# History: keep a long history and share across sessions
+HISTFILE=${HISTFILE:-$HOME/.zsh_history}
+HISTSIZE=10000
+SAVEHIST=10000
+setopt INC_APPEND_HISTORY   # write each command to history immediately
+setopt SHARE_HISTORY        # share history across all running zsh sessions
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_EXPIRE_DUPS_FIRST
+
+# zsh-completions
+{{- if eq .chezmoi.os "darwin" }}
+FPATH=$HOMEBREW_PREFIX/share/zsh-completions:$FPATH
+{{- end }}
+
+# Performance optimizations
+autoload -Uz compinit
+# Rebuild completion dump if it doesn't exist or is older than 24 hours.
+if [[ ! -f ~/.zcompdump || -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit -u
+else
+  compinit -C -u
+fi
+
+# Cache expensive completions
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+
+# zsh plugins (must be after compinit)
+{{- if eq .chezmoi.os "darwin" }}
+[[ -r "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+[[ -r "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+{{- else if eq .chezmoi.os "linux" }}
+[[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+{{- end }}
+
+### Completion configuration
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # Case insensitive completion
+
+### Directory colors
+command -v gdircolors >/dev/null 2>&1 && alias dircolors="gdircolors"
+[[ -f ~/.dircolors ]] && eval "$(dircolors -b ~/.dircolors)"
+
+### Source modular configuration (~/.zsh.d/)
+# Files are loaded in lexical order, so keep numeric prefixes for readability.
+if [[ -d ~/.zsh.d ]]; then
+  for config_file in ~/.zsh.d/*.zsh(N); do
+    source "$config_file"
+  done
+fi
+unset config_file
+
+### Source legacy or private configuration files
+for config_file in ~/.{extra,private,functions}; do
+    [[ -r "$config_file" ]] && source "$config_file"
+done
+unset config_file
+
+
+### FZF configuration
+{{- if eq .chezmoi.os "darwin" }}
+if [[ -r "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh"
+fi
+if [[ -r "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh" ]]; then
+  source "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh"
+fi
+{{- else if eq .chezmoi.os "linux" }}
+DOTFILES_FZF_KEYBINDINGS_LOADED=0
+for fzf_script in \
+  /usr/share/doc/fzf/examples/completion.zsh \
+  /usr/share/fzf/completion.zsh \
+  /usr/share/fzf/shell/completion.zsh; do
+  if [[ -r "$fzf_script" ]]; then
+    source "$fzf_script"
+    break
+  fi
+done
+for fzf_script in \
+  /usr/share/doc/fzf/examples/key-bindings.zsh \
+  /usr/share/fzf/key-bindings.zsh \
+  /usr/share/fzf/shell/key-bindings.zsh; do
+  if [[ -r "$fzf_script" ]]; then
+    source "$fzf_script"
+    DOTFILES_FZF_KEYBINDINGS_LOADED=1
+    break
+  fi
+done
+unset fzf_script
+{{- end }}
+[[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
+
+# Catppuccin Mocha theme for FZF
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a \
+--multi"
+
+### Key bindings
+# Right arrow accepts the current autosuggestion (more conventional than Tab Tab)
+bindkey '^[[C' autosuggest-accept
+{{- if eq .chezmoi.os "linux" }}
+# Keep Ctrl-R usable even when Atuin/fzf key bindings are unavailable.
+if [[ "${DOTFILES_FZF_KEYBINDINGS_LOADED:-0}" -eq 0 ]]; then
+  bindkey '^R' history-incremental-search-backward
+fi
+unset DOTFILES_FZF_KEYBINDINGS_LOADED
+{{- end }}
+
+### Path configuration
+# Note: Homebrew bin/sbin are already added by `brew shellenv` — omit them
+# here to avoid duplicate PATH entries.
+typeset -U path  # deduplicate PATH entries
+path=(
+  "$HOME/.local/bin"
+  "$HOME/.devops-env/.venv/bin"
+  "/usr/local/bin"
+  "/usr/local/sbin"
+  $path
+)
+
+{{- if eq .chezmoi.os "darwin" }}
+# Man path (macOS Homebrew)
+export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:"
+export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
+{{- end }}
+
+### Tool configurations
+{{- if eq .chezmoi.os "darwin" }}
+# Z jump configuration (Homebrew)
+[[ -r "$HOMEBREW_PREFIX/etc/profile.d/z.sh" ]] && . "$HOMEBREW_PREFIX/etc/profile.d/z.sh"
+{{- else if eq .chezmoi.os "linux" }}
+# Z jump configuration (manual install)
+[[ -r "$HOME/.local/share/z/z.sh" ]] && . "$HOME/.local/share/z/z.sh"
+{{- end }}
+
+# Load Powerlevel10k configuration
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+# MesloLGS NF Font Installation Script
+# This script is managed by chezmoi and runs on change.
+# It installs the required fonts for Powerlevel10k on both Linux and macOS.
+
+set -euo pipefail
+
+log_info() { echo -e "\033[34m[INFO]\033[0m $*"; }
+log_success() { echo -e "\033[32m[OK]\033[0m $*"; }
+log_warn() { echo -e "\033[33m[WARN]\033[0m $*"; }
+
+install_meslo_linux() {
+    local font_dir="$HOME/.local/share/fonts/MesloLGS-NF"
+    if [[ ! -f "$font_dir/MesloLGS NF Regular.ttf" ]]; then
+        log_info "Installing MesloLGS NF fonts for Linux..."
+        mkdir -p "$font_dir"
+        
+        local base_url="https://github.com/romkatv/powerlevel10k-media/raw/master"
+        curl -fsSLo "$font_dir/MesloLGS NF Regular.ttf" "$base_url/MesloLGS%20NF%20Regular.ttf"
+        curl -fsSLo "$font_dir/MesloLGS NF Bold.ttf" "$base_url/MesloLGS%20NF%20Bold.ttf"
+        curl -fsSLo "$font_dir/MesloLGS NF Italic.ttf" "$base_url/MesloLGS%20NF%20Italic.ttf"
+        curl -fsSLo "$font_dir/MesloLGS NF Bold Italic.ttf" "$base_url/MesloLGS%20NF%20Bold%20Italic.ttf"
+        
+        if command -v fc-cache >/dev/null 2>&1; then
+            fc-cache -f "$font_dir" >/dev/null 2>&1 || true
+        fi
+        log_success "MesloLGS NF installed to $font_dir"
+    else
+        log_info "MesloLGS NF already installed on Linux."
+    fi
+}
+
+install_meslo_macos() {
+    if ! brew list --cask font-meslo-lg-nerd-font >/dev/null 2>&1; then
+        log_info "Installing MesloLGS NF fonts via Homebrew Cask..."
+        brew install --cask font-meslo-lg-nerd-font
+        log_success "MesloLGS NF installed via Homebrew."
+    else
+        log_info "MesloLGS NF already installed on macOS."
+    fi
+}
+
+case "$(uname -s)" in
+    Linux)
+        install_meslo_linux
+        ;;
+    Darwin)
+        install_meslo_macos
+        ;;
+    *)
+        log_warn "Unsupported OS for font automation: $(uname -s)"
+        ;;
+esac

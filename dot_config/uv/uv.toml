@@ -1,0 +1,6 @@
+# Global uv defaults for local development on managed Python runtimes.
+python-preference = "managed"
+python-downloads = "automatic"
+
+[pip]
+strict = true

@@ -1,0 +1,19 @@
+{{- $name := index . "name" -}}
+{{- $email := index . "email" -}}
+{{- $githubUser := index . "github_user" -}}
+{{- if or $name $email $githubUser }}
+{{- if or $name $email }}
+[user]
+{{- if $name }}
+  name = {{ $name }}
+{{- end }}
+{{- if $email }}
+  email = {{ $email }}
+{{- end }}
+
+{{- end }}
+{{- if $githubUser }}
+[github]
+  user = {{ $githubUser }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Install packages and developer tools
+# macOS: Homebrew bundle + mise
+# Linux: mise only (apt packages installed by setup-linux.sh)
+
+set -euo pipefail
+
+CHEZMOI_SOURCE_DIR={{ printf "%q" .chezmoi.sourceDir }}
+TOOL_VERSIONS_SOURCE="${CHEZMOI_SOURCE_DIR}/dot_tool-versions"
+
+{{ if eq .chezmoi.os "linux" -}}
+# On Linux, install mise if not present
+if ! command -v mise >/dev/null 2>&1; then
+    if [[ -x "$HOME/.local/bin/mise" ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    else
+        echo "🔧 Installing mise..."
+        curl -fsSL https://mise.run | sh
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+fi
+{{ else -}}
+# macOS: ensure Homebrew is available
+if ! command -v brew >/dev/null 2>&1; then
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -x /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    else
+        echo "✗ Homebrew is required (run bootstrap.sh first)"
+        exit 1
+    fi
+fi
+
+# Render and install Brewfile
+BREWFILE_TMPL="${CHEZMOI_SOURCE_DIR}/Brewfile.tmpl"
+if [[ ! -f "$BREWFILE_TMPL" ]]; then
+    echo "✗ Brewfile.tmpl not found"
+    exit 1
+fi
+
+BREWFILE_RENDERED="$(mktemp)"
+chezmoi execute-template < "$BREWFILE_TMPL" > "$BREWFILE_RENDERED"
+
+echo "📦 Syncing Homebrew bundle..."
+bundle_cmd=(brew bundle install --file "$BREWFILE_RENDERED" --no-upgrade)
+
+if ! command -v mas >/dev/null 2>&1 || ! mas account >/dev/null 2>&1; then
+    echo "  → Mac App Store is not signed in, skipping mas entries"
+    bundle_cmd=(env HOMEBREW_BUNDLE_MAS_SKIP=1 "${bundle_cmd[@]}")
+fi
+
+"${bundle_cmd[@]}"
+rm -f "$BREWFILE_RENDERED"
+{{ end -}}
+
+# Install mise runtimes (both platforms)
+if ! command -v mise >/dev/null 2>&1; then
+    echo "✗ mise not found"
+    exit 1
+fi
+
+if [[ ! -f "$TOOL_VERSIONS_SOURCE" ]]; then
+    echo "✗ dot_tool-versions not found"
+    exit 1
+fi
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+cp "$TOOL_VERSIONS_SOURCE" "$tmpdir/.tool-versions"
+
+echo "🔧 Installing runtimes with mise..."
+mise install --yes --cd "$tmpdir"
+
+# tmux plugin manager
+if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+    echo "🔌 Installing tmux plugin manager..."
+    mkdir -p "$HOME/.tmux/plugins"
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+fi
+
+echo "✓ Packages and runtimes installed"
