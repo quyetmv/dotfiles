@@ -117,7 +117,6 @@ install_apt_packages() {
         mysql-client
         ncdu
         net-tools
-        neovim
         nfs-common
         numactl
         procps

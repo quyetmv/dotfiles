@@ -37,6 +37,5 @@ if command -v lsd >/dev/null 2>&1; then
 fi
 
 # Editors and docs
-alias v="nvim"
-alias vim="nvim"
+
 alias tldrf='tldr --list | fzf --preview "tldr {1}" --preview-window=right,60% | xargs tldr'
