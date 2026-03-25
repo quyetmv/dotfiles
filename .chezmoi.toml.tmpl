@@ -18,9 +18,9 @@
 {{- $workConfigs := list -}}
 {{- if $interactive -}}
 {{-   $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
-{{-   if gt $workCount 0 -}}
-{{-     $countStr := printf "%d" $workCount -}}
-{{-     range $i := until (atoi $countStr) -}}
+{{-   $workCountInt := int $workCount -}}
+{{-   if gt $workCountInt 0 -}}
+{{-     range $i := until $workCountInt -}}
 {{-       $idx := add $i 1 -}}
 {{-       $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
 {{-       $email := promptString (printf "Git email address for Work %d" $idx) -}}
