@@ -46,6 +46,7 @@ Commands:
   docker     Install Docker CE
   ansible    Install ansible config and directories
   wsl        Install WSL extras (only when running under WSL)
+  sudoers    Configure passwordless sudo for current user
   all        Install base + Docker + WSL extras when applicable
   help       Show this help
 EOF
@@ -260,6 +261,13 @@ wsl_basics() {
     log_success "WSL basics done."
 }
 
+setup_sudoers() {
+    log_info "Configuring passwordless sudo for $USER..."
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee "/etc/sudoers.d/$USER" >/dev/null
+    sudo chmod 0440 "/etc/sudoers.d/$USER"
+    log_success "Sudoers configured."
+}
+
 run_steps() {
     local failed=()
     local step
@@ -287,7 +295,8 @@ install_base() {
         "apt packages:install_apt_packages" \
         "mise:install_mise" \
         "zsh extras:install_zsh_extras" \
-        "ansible config:setup_ansible_config"
+        "ansible config:setup_ansible_config" \
+        "sudoers:setup_sudoers"
 }
 
 install_all() {
@@ -297,7 +306,8 @@ install_all() {
         "zsh extras:install_zsh_extras" \
         "docker:install_docker" \
         "ansible config:setup_ansible_config" \
-        "wsl basics:wsl_basics"
+        "wsl basics:wsl_basics" \
+        "sudoers:setup_sudoers"
 }
 
 show_menu() {
@@ -312,8 +322,9 @@ show_menu() {
     echo " 3  - Docker CE"
     echo " 4  - Ansible config setup"
     echo " 5  - WSL basics"
-    echo " 6  - Base install"
-    echo " 7  - Install ALL"
+    echo " 6  - Configure sudoers passwordless"
+    echo " 7  - Base install"
+    echo " 8  - Install ALL"
     echo ""
 }
 
@@ -330,8 +341,9 @@ run_interactive() {
         3) install_docker ;;
         4) setup_ansible_config ;;
         5) wsl_basics ;;
-        6) install_base ;;
-        7) install_all ;;
+        6) setup_sudoers ;;
+        7) install_base ;;
+        8) install_all ;;
         *) log_error "Invalid choice."; exit 1 ;;
     esac
 
@@ -380,6 +392,10 @@ case "$ACTION" in
     wsl|--wsl)
         preflight
         wsl_basics
+        ;;
+    sudoers|--sudoers)
+        preflight
+        setup_sudoers
         ;;
     *)
         log_error "Unknown command: $ACTION"

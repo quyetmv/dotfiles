@@ -1,18 +1,24 @@
 {{- $interactive := not (or (env "CI") (env "GITHUB_ACTIONS")) -}}
 
 {{- $email := env "CHEZMOI_GIT_EMAIL" -}}
-{{- if and (not $email) $interactive -}}
-{{-   $email = promptString "Git email address (Personal)" -}}
-{{- end -}}
-
 {{- $name := env "CHEZMOI_GIT_NAME" -}}
-{{- if and (not $name) $interactive -}}
-{{-   $name = promptString "Git full name (Personal)" -}}
+{{- $githubUser := env "CHEZMOI_GITHUB_USER" -}}
+{{- $enablePersonal := true -}}
+
+{{- if $interactive -}}
+{{-   $enablePersonal = promptBool "Do you want to configure a personal Git account? (y/n)" -}}
 {{- end -}}
 
-{{- $githubUser := env "CHEZMOI_GITHUB_USER" -}}
-{{- if and (not $githubUser) $interactive -}}
-{{-   $githubUser = promptString "GitHub username (Personal)" -}}
+{{- if $enablePersonal -}}
+{{-   if and (not $email) $interactive -}}
+{{-     $email = promptString "Git email address (Personal)" -}}
+{{-   end -}}
+{{-   if and (not $name) $interactive -}}
+{{-     $name = promptString "Git full name (Personal)" -}}
+{{-   end -}}
+{{-   if and (not $githubUser) $interactive -}}
+{{-     $githubUser = promptString "GitHub username (Personal)" -}}
+{{-   end -}}
 {{- end -}}
 
 {{- $workConfigs := list -}}
