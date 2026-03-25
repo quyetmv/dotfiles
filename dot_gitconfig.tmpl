@@ -1,5 +1,5 @@
-{{- $name := .name -}}
-{{- $email := .email -}}
+{{- $name := get . "name" | default "" -}}
+{{- $email := get . "email" | default "" -}}
 
 {{- if or $name $email }}
 [user]

@@ -1,6 +1,6 @@
-{{- $name := index . "name" -}}
-{{- $email := index . "email" -}}
-{{- $githubUser := index . "github_user" -}}
+{{- $name := get . "name" | default "" -}}
+{{- $email := get . "email" | default "" -}}
+{{- $githubUser := get . "github_user" | default "" -}}
 {{- if or $name $email $githubUser }}
 {{- if or $name $email }}
 [user]
