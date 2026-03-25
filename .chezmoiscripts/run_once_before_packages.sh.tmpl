@@ -74,9 +74,13 @@ mise install --yes --cd "$tmpdir"
 
 # tmux plugin manager
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-    echo "🔌 Installing tmux plugin manager..."
-    mkdir -p "$HOME/.tmux/plugins"
-    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+    if command -v git >/dev/null 2>&1; then
+        echo "🔌 Installing tmux plugin manager..."
+        mkdir -p "$HOME/.tmux/plugins"
+        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+    else
+        echo "⚠️  git not found. Skipping tmux plugin manager installation."
+    fi
 fi
 
 echo "✓ Packages and runtimes installed"
