@@ -16,7 +16,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 ### Linux / WSL
 
 ```bash
-sudo apt update && sudo apt install -y curl git
+sudo apt update && sudo apt install -y curl git make
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 
 # Then install system packages:

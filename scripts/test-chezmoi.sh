@@ -16,6 +16,8 @@ warn() { echo -e "${YELLOW}⚠${NC}  $1"; }
 # Locate chezmoi binary
 if command -v chezmoi >/dev/null 2>&1; then
     CHEZMOI=chezmoi
+elif [[ -x "$CHEZMOI_SOURCE/bin/chezmoi" ]]; then
+    CHEZMOI="$CHEZMOI_SOURCE/bin/chezmoi"
 elif [[ -x /tmp/bin/chezmoi ]]; then
     CHEZMOI=/tmp/bin/chezmoi
 else

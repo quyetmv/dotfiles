@@ -111,8 +111,12 @@ fi
 
 # --- mise runtimes (cross-platform) ---
 if ! command -v mise >/dev/null 2>&1; then
-    echo "✗ mise is required (install: curl https://mise.run | sh)"
-    exit 1
+    if [[ -x "$HOME/.local/bin/mise" ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    else
+        echo "✗ mise is required (install: curl https://mise.run | sh)"
+        exit 1
+    fi
 fi
 
 if [[ ! -f "$TOOL_VERSIONS" ]]; then

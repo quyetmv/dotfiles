@@ -21,8 +21,10 @@ sync: ## Sync Homebrew and mise packages
 	./scripts/sync-tooling.sh
 	$(MAKE) apply
 
+CHEZMOI_EXE := $(shell command -v chezmoi 2>/dev/null || echo ./bin/chezmoi)
+
 apply: ## Apply dotfiles with Chezmoi
-	./bin/chezmoi apply --source $(PWD) --force
+	$(CHEZMOI_EXE) apply --source $(PWD) --force
 
 devops-env: ## Create or update ~/.devops-env with uv
 	bash ./scripts/bootstrap-devops-env.sh
