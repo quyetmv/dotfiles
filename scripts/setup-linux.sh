@@ -261,6 +261,35 @@ wsl_basics() {
     log_success "WSL basics done."
 }
 
+is_desktop() {
+    [[ -n "$XDG_CURRENT_DESKTOP" ]] || [[ -n "$DISPLAY" ]] || [[ -n "$WAYLAND_DISPLAY" ]]
+}
+
+install_vscodium() {
+    if ! command_exists codium; then
+        log_info "Installing VSCodium..."
+        sudo curl -fsSL "https://gitlab.com/paulcarroty/vscodium-deb-rpm-repo/raw/master/pub.gpg" -o /usr/share/keyrings/vscodium-archive-keyring.asc
+        echo 'deb [signed-by=/usr/share/keyrings/vscodium-archive-keyring.asc] https://download.vscodium.com/debs vscodium main' | sudo tee /etc/apt/sources.list.d/vscodium.list >/dev/null
+        sudo apt-get update -qq
+        if sudo apt-get install -y codium; then
+            log_success "VSCodium installed."
+        else
+            log_error "Failed to install VSCodium."
+        fi
+    else
+        log_info "VSCodium already installed."
+    fi
+}
+
+install_desktop_apps() {
+    if is_desktop; then
+        log_info "Desktop environment detected. Installing GUI apps..."
+        install_vscodium
+    else
+        log_info "No desktop environment detected; skipping GUI apps."
+    fi
+}
+
 setup_sudoers() {
     log_info "Configuring passwordless sudo for $USER..."
     echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee "/etc/sudoers.d/$USER" >/dev/null
@@ -296,7 +325,8 @@ install_base() {
         "mise:install_mise" \
         "zsh extras:install_zsh_extras" \
         "ansible config:setup_ansible_config" \
-        "sudoers:setup_sudoers"
+        "sudoers:setup_sudoers" \
+        "desktop apps:install_desktop_apps"
 }
 
 install_all() {
@@ -307,7 +337,8 @@ install_all() {
         "docker:install_docker" \
         "ansible config:setup_ansible_config" \
         "wsl basics:wsl_basics" \
-        "sudoers:setup_sudoers"
+        "sudoers:setup_sudoers" \
+        "desktop apps:install_desktop_apps"
 }
 
 show_menu() {
