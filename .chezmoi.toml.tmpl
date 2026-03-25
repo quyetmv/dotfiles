@@ -22,25 +22,32 @@
 {{- end -}}
 
 {{- $workConfigs := list -}}
+{{- $enableWork := true -}}
 {{- if $interactive -}}
-{{-   $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
-{{-   $workCountInt := int $workCount -}}
-{{-   if gt $workCountInt 0 -}}
-{{-     range $i := until $workCountInt -}}
-{{-       $idx := add $i 1 -}}
-{{-       $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
-{{-       $email := promptString (printf "Git email address for Work %d" $idx) -}}
-{{-       $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
-{{-       $workConfigs = append $workConfigs (dict "dir" $dir "email" $email "name" $name) -}}
+{{-   $enableWork = promptBool "Do you want to configure Work Git accounts? (y/n)" -}}
+{{- end -}}
+
+{{- if $enableWork -}}
+{{-   if $interactive -}}
+{{-     $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
+{{-     $workCountInt := int $workCount -}}
+{{-     if gt $workCountInt 0 -}}
+{{-       range $i := until $workCountInt -}}
+{{-         $idx := add $i 1 -}}
+{{-         $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
+{{-         $email := promptString (printf "Git email address for Work %d" $idx) -}}
+{{-         $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
+{{-         $workConfigs = append $workConfigs (dict "dir" $dir "email" $email "name" $name) -}}
+{{-       end -}}
 {{-     end -}}
-{{-   end -}}
-{{- else -}}
+{{-   else -}}
 {{/* Fallback to env vars for CI/non-interactive mode */}}
-{{-   $workGitDir := env "CHEZMOI_WORK_GIT_DIR" -}}
-{{-   if $workGitDir -}}
-{{-     $workEmail := env "CHEZMOI_WORK_GIT_EMAIL" -}}
-{{-     $workName := env "CHEZMOI_WORK_GIT_NAME" -}}
-{{-     $workConfigs = append $workConfigs (dict "dir" $workGitDir "email" $workEmail "name" $workName) -}}
+{{-     $workGitDir := env "CHEZMOI_WORK_GIT_DIR" -}}
+{{-     if $workGitDir -}}
+{{-       $workEmail := env "CHEZMOI_WORK_GIT_EMAIL" -}}
+{{-       $workName := env "CHEZMOI_WORK_GIT_NAME" -}}
+{{-       $workConfigs = append $workConfigs (dict "dir" $workGitDir "email" $workEmail "name" $workName) -}}
+{{-     end -}}
 {{-   end -}}
 {{- end -}}
 
