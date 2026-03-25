@@ -3,6 +3,10 @@ set -euo pipefail
 
 PROJECT_DIR="${DEVOPS_ENV_DIR:-$HOME/.devops-env}"
 
+if [[ -d "$HOME/.local/share/mise/shims" ]]; then
+    export PATH="$HOME/.local/share/mise/shims:$PATH"
+fi
+
 if ! command -v uv >/dev/null 2>&1; then
     echo "✗ uv not found"
     echo "  Run: chezmoi apply --force"
