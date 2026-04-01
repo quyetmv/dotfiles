@@ -19,7 +19,8 @@ awscli 2
 sops 3.10
 age 1.2
 vault latest
-k9s latest
+#k9s latest
+k9s v0.40.0
 infracost latest
 lazydocker latest
 kubectx latest
