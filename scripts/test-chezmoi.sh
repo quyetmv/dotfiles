@@ -212,7 +212,7 @@ if command -v rg >/dev/null 2>&1; then
         --glob '!scripts/**' \
         --glob '!ansible.cfg' \
         --glob '!ansible.cfg' \
-        | rg -v 'keybind|keyboard|keyword|AWS_OKTA_MFA_DUO_DEVICE=token|1password' || true)"
+        | rg -v 'keybind|keyboard|keyword|AWS_OKTA_MFA_DUO_DEVICE=token|1password|password prompt|passwordless|NOPASSWD' || true)"
 else
     SECRETS="$(grep -r -i -E "$SECRET_PATTERNS" "$CHEZMOI_SOURCE" \
         --exclude-dir=dot_claude \
@@ -227,7 +227,7 @@ else
         --exclude="ansible.cfg" \
         --exclude="ansible.cfg" \
         --exclude="chezmoi" \
-        | grep -v 'keybind\|keyboard\|keyword\|AWS_OKTA_MFA_DUO_DEVICE=token\|1password' || true)"
+        | grep -v 'keybind\|keyboard\|keyword\|AWS_OKTA_MFA_DUO_DEVICE=token\|1password\|password prompt\|passwordless\|NOPASSWD' || true)"
 
 fi
 
