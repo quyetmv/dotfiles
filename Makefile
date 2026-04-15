@@ -26,7 +26,8 @@ CHEZMOI_EXE := $(shell command -v chezmoi 2>/dev/null || echo ./bin/chezmoi)
 apply: ## Apply dotfiles with Chezmoi
 	$(CHEZMOI_EXE) apply --source $(PWD) --force
 
-devops-env: ## Create or update ~/.devops-env with uv
+devops-env: ## Apply dotfiles, then create or update ~/.devops-env with uv
+	$(MAKE) apply
 	bash ./scripts/bootstrap-devops-env.sh
 
 linux: ## Run the Linux-specific apt and setup tool

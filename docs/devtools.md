@@ -109,7 +109,7 @@ Ngoài ra repo này provision sẵn `~/.devops-env` như một Python workspace 
 
 - `~/.devops-env/pyproject.toml`
 - `~/.devops-env/.python-version`
-- `make devops-env` để chạy `uv sync`
+- `make devops-env` để apply dotfiles, chạy `uv sync`, và bật auto-activate cho zsh shell mới
 
 Global shell shortcuts cho Python nằm ở `dot_zsh.d/70-python.zsh`:
 
@@ -119,6 +119,8 @@ Global shell shortcuts cho Python nằm ở `dot_zsh.d/70-python.zsh`:
 - `urun` -> `uv run`
 - `devenv` -> `cd ~/.devops-env`
 - `devenv-sync` -> sync `~/.devops-env`
+- `devenv-activate` -> activate `~/.devops-env/.venv`
+- `devenv-auto-off` -> tắt auto-activate
 
 ## Shell modules
 

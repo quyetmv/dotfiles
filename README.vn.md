@@ -241,7 +241,6 @@ uv run python ...
 Repo cũng quản lý sẵn một workspace Python dùng chung cho tooling DevOps ở `~/.devops-env`:
 
 ```bash
-chezmoi apply --source="$PWD" --force
 make devops-env
 ```
 
