@@ -255,6 +255,8 @@ cd ~/.devops-env
 uv sync
 ```
 
+The venv `bin` directory is already on `PATH`, and `make devops-env` enables auto-activation for new zsh shells. To enter it explicitly, run `devenv-activate`. To disable auto-activation, run `devenv-auto-off`.
+
 ## Validation
 
 ```bash
@@ -295,4 +297,3 @@ This prompt is tuned for DevOps workflows: it only shows `k8s`, `tf`, `aws` when
 ## Acknowledgements
 
 This project is inspired by and based on [Helder Burato Berto's dotfiles](https://github.com/helderberto/dotfiles).
-

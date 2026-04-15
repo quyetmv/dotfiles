@@ -71,6 +71,9 @@ MISE_TOOLS=("python" "uv" "jq" "yq" "kubectl" "helm" "terraform")
 for tool in "${MISE_TOOLS[@]}"; do
     command -v "$tool" >/dev/null 2>&1 && pass "$tool" || warn "$tool not found (run: mise install)"
 done
+[[ ":$PATH:" == *":$HOME/.local/share/mise/shims:"* ]] \
+    && pass "mise shims in PATH" \
+    || warn "mise shims missing from PATH (reload shell / re-apply dotfiles)"
 
 # 5. Workspace
 echo ""
@@ -86,6 +89,7 @@ echo "6️⃣  Runtime manifests..."
 [[ -f "$HOME/.devops-env/pyproject.toml" ]] && pass "~/.devops-env/pyproject.toml" || warn "~/.devops-env/pyproject.toml not found"
 [[ -f "$HOME/.devops-env/.python-version" ]] && pass "~/.devops-env/.python-version" || warn "~/.devops-env/.python-version not found"
 [[ -d "$HOME/.devops-env/.venv" ]] && pass "~/.devops-env/.venv" || warn "~/.devops-env/.venv not found (run: make devops-env)"
+[[ -x "$HOME/.devops-env/.venv/bin/ansible" ]] && pass "~/.devops-env ansible" || warn "ansible not found in ~/.devops-env/.venv/bin (run: make devops-env)"
 [[ -f "$HOME/.private" ]]             && pass "~/.private"             || warn "~/.private not found"
 
 # 7. OS-specific checks

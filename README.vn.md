@@ -252,6 +252,8 @@ cd ~/.devops-env
 uv sync
 ```
 
+Thư mục `bin` của venv đã nằm trong `PATH`, và `make devops-env` bật auto-activate cho các zsh shell mới. Khi cần vào env rõ ràng, chạy `devenv-activate`. Nếu muốn tắt auto-activate, chạy `devenv-auto-off`.
+
 ## Validation
 
 ```bash

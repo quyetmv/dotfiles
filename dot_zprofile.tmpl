@@ -7,7 +7,5 @@ elif [[ -x /usr/local/bin/brew ]]; then
 fi
 {{ end -}}
 
-# Ensure mise is in PATH and activated for login shells
-if [[ -x "$HOME/.local/bin/mise" ]]; then
-  eval "$("$HOME/.local/bin/mise" activate zsh)"
-fi
+# Keep login-shell setup minimal.
+# `mise` is initialized from ~/.zshrc after PATH has been normalized.

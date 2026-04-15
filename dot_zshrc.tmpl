@@ -142,6 +142,7 @@ unset DOTFILES_FZF_KEYBINDINGS_LOADED
 # here to avoid duplicate PATH entries.
 typeset -U path  # deduplicate PATH entries
 path=(
+  "$HOME/.local/share/mise/shims"
   "$HOME/.local/bin"
   "$HOME/.claude/skills/gstack/bin"
   "$HOME/.devops-env/.venv/bin"
@@ -168,6 +169,8 @@ export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
 # Load Powerlevel10k configuration
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-if command -v mise >/dev/null 2>&1; then
+if [[ -x "$HOME/.local/bin/mise" ]]; then
+  eval "$("$HOME/.local/bin/mise" activate zsh)"
+elif command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi

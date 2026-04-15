@@ -25,7 +25,11 @@ echo "🐍 Syncing DevOps Python environment in $PROJECT_DIR ..."
     cd "$PROJECT_DIR"
     uv sync
 )
+touch "$PROJECT_DIR/.auto-activate"
 
 echo "✓ DevOps Python environment is ready"
 echo "  Activate: source \"$PROJECT_DIR/.venv/bin/activate\""
+echo "  Zsh helper: devenv-activate"
+echo "  Auto-activate: enabled for new zsh shells"
+echo "  Disable: devenv-auto-off"
 echo "  Or run:   cd \"$PROJECT_DIR\" && uv run python"
