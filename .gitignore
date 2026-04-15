@@ -29,6 +29,7 @@ skills-lock.json
 .adal/
 .agent/
 .agents/
+.gstack/
 .augment/
 .claude/
 .cline/
