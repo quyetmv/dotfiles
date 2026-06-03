@@ -214,6 +214,7 @@ if command -v rg >/dev/null 2>&1; then
         --glob '!.chezmoiignore' \
         --glob '!.gitignore' \
         --glob '!scripts/**' \
+        --glob '!.chezmoiscripts/**' \
         --glob '!ansible.cfg' \
         | rg -v 'keybind|keyboard|keyword|AWS_OKTA_MFA_DUO_DEVICE=token|1password|password prompt|passwordless|NOPASSWD|chezmoi_private_key' || true)"
 else
@@ -231,6 +232,7 @@ else
         --exclude=".chezmoiignore" \
         --exclude=".gitignore" \
         --exclude-dir="scripts" \
+        --exclude-dir=".chezmoiscripts" \
         --exclude="ansible.cfg" \
         --exclude="chezmoi" \
         | grep -v 'keybind\|keyboard\|keyword\|AWS_OKTA_MFA_DUO_DEVICE=token\|1password\|password prompt\|passwordless\|NOPASSWD\|chezmoi_private_key' || true)"

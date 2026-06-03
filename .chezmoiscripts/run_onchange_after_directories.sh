@@ -23,7 +23,11 @@ fi
 
 echo "✓ Workspace directories ready"
 
-if [ ! -f "$HOME/.private" ]; then
-    touch "$HOME/.private"
-    echo "  ✓ Created ~/.private"
+# Private directory for credential files — restricted permissions
+if [ ! -d "$HOME/.secrets" ]; then
+    mkdir -p "$HOME/.secrets"
+    chmod 700 "$HOME/.secrets"
+    echo "  ✓ Created ~/.secrets (700)"
+else
+    chmod 700 "$HOME/.secrets"
 fi
