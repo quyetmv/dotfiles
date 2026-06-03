@@ -1,6 +1,6 @@
-# vim as default
-export EDITOR="vim"
+export EDITOR="nvim"
 export VISUAL="$EDITOR"
+export NVIM_LISTEN_ADDRESS="$HOME/.cache/nvim/nvim.pipe"
 
 # Prefer US English and use UTF-8
 if command -v locale >/dev/null 2>&1 && locale -a 2>/dev/null | grep -qi '^en_US\.utf-8$'; then

@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "plugins": {
+    "ui-ux-pro-max@ui-ux-pro-max-skill": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0",
+        "version": "2.5.0",
+        "installedAt": "2026-05-23T16:25:17.875Z",
+        "lastUpdated": "2026-05-23T16:25:17.875Z",
+        "gitCommitSha": "b7e3af80f6e331f6fb456667b82b12cade7c9d35"
+      }
+    ],
+    "voltagent-infra@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/voltagent-subagents/voltagent-infra/1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-05-23T17:03:07.106Z",
+        "lastUpdated": "2026-05-23T17:03:07.106Z",
+        "gitCommitSha": "945f491f0f453dfd735262d4d98825a5227ac301"
+      }
+    ],
+    "claude-code-harness@claude-code-harness-marketplace": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/claude-code-harness-marketplace/claude-code-harness/4.12.3",
+        "version": "4.12.3",
+        "installedAt": "2026-05-26T14:12:46.163Z",
+        "lastUpdated": "2026-05-26T14:12:46.163Z",
+        "gitCommitSha": "2f51a049609ee2e0378688575b82079eeac8a418"
+      }
+    ],
+    "understand-anything@understand-anything": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/understand-anything/understand-anything/2.7.5",
+        "version": "2.7.5",
+        "installedAt": "2026-05-28T10:02:47.881Z",
+        "lastUpdated": "2026-05-28T10:02:47.881Z",
+        "gitCommitSha": "26edf61856fa476e466bda1814819a266a293c47"
+      }
+    ],
+    "superpowers@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0",
+        "version": "5.1.0",
+        "installedAt": "2026-05-28T14:37:42.772Z",
+        "lastUpdated": "2026-05-28T14:37:42.772Z",
+        "gitCommitSha": "f2cbfbefebbfef77321e4c9abc9e949826bea9d7"
+      }
+    ],
+    "python-development@claude-code-workflows": [
+      {
+        "scope": "user",
+        "installPath": "/Users/quyetmv/.claude/plugins/cache/claude-code-workflows/python-development/1.2.3",
+        "version": "1.2.3",
+        "installedAt": "2026-06-02T14:07:49.957Z",
+        "lastUpdated": "2026-06-02T14:07:49.957Z",
+        "gitCommitSha": "0818067b4ecad18c234b2ae427cc44f2053792d4"
+      }
+    ]
+  }
+}

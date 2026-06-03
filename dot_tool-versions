@@ -28,7 +28,6 @@ kubens latest
 kubecm latest
 lazygit latest
 bat latest
-lsd latest
 
 # Versioned CLI utilities
 

@@ -153,7 +153,7 @@ while IFS= read -r -d '' script; do
     else
         fail "$(basename "$script") not executable"
     fi
-done < <(find "$CHEZMOI_SOURCE/.chezmoiscripts" -name "run_once_*.sh*" -print0)
+done < <(find "$CHEZMOI_SOURCE/.chezmoiscripts" \( -name "run_once_*.sh*" -o -name "run_onchange_*.sh*" \) -print0)
 
 PROJECT_SCRIPTS=(
     "scripts/bootstrap.sh"
@@ -205,12 +205,15 @@ if command -v rg >/dev/null 2>&1; then
         --glob '!references/**' \
         --glob '!.git/**' \
         --glob '!.github/**' \
+        --glob '!.neuralmemory/**' \
+        --glob '!.gstack/**' \
+        --glob '!.claude/**' \
+        --glob '!docs/**' \
         --glob '!bin/chezmoi' \
         --glob '!*.md' \
         --glob '!.chezmoiignore' \
         --glob '!.gitignore' \
         --glob '!scripts/**' \
-        --glob '!ansible.cfg' \
         --glob '!ansible.cfg' \
         | rg -v 'keybind|keyboard|keyword|AWS_OKTA_MFA_DUO_DEVICE=token|1password|password prompt|passwordless|NOPASSWD' || true)"
 else
@@ -220,11 +223,14 @@ else
         --exclude-dir=references \
         --exclude-dir=.github \
         --exclude-dir=.git \
+        --exclude-dir=.neuralmemory \
+        --exclude-dir=.gstack \
+        --exclude-dir=.claude \
+        --exclude-dir=docs \
         --exclude="*.md" \
         --exclude=".chezmoiignore" \
         --exclude=".gitignore" \
         --exclude-dir="scripts" \
-        --exclude="ansible.cfg" \
         --exclude="ansible.cfg" \
         --exclude="chezmoi" \
         | grep -v 'keybind\|keyboard\|keyword\|AWS_OKTA_MFA_DUO_DEVICE=token\|1password\|password prompt\|passwordless\|NOPASSWD' || true)"

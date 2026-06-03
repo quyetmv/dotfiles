@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# init.lua:  {{ include (joinPath .chezmoi.sourceDir "dot_config/nvim/init.lua") | sha256sum }}
+# lazy.lua:  {{ include (joinPath .chezmoi.sourceDir "dot_config/nvim/lua/hbb/lazy.lua") | sha256sum }}
+# plugins:   {{ include (joinPath .chezmoi.sourceDir "dot_config/nvim/lua/plugins/init.lua") | sha256sum }}
+set -euo pipefail
+command -v nvim >/dev/null 2>&1 || exit 0
+mkdir -p "$HOME/.cache/nvim"
+nvim --headless +"Lazy! sync" +qa 2>/dev/null || true

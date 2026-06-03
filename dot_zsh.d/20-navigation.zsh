@@ -24,17 +24,6 @@ alias la='ls -A'
 alias lla='ls -lA'
 alias l.='ls -A | grep "^\."'
 
-if command -v lsd >/dev/null 2>&1; then
-    alias ls='lsd --group-dirs first'
-    alias l='ls -l'
-    alias ll='ls -l'
-    alias la='ls -A'
-    alias lla='ls -lA'
-    alias l.='lsd -A | grep "^\."'
-    alias lsg='lsd -l --git --group-dirs first'
-    alias lt='lsd --tree --depth 2'
-    alias lt3='lsd --tree --depth 3'
-fi
 
 # Editors and docs
 

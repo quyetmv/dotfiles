@@ -22,6 +22,9 @@ nvim/.config/*
 # ZSH
 .private
 
+# Neural memory (session-local, not for repo)
+.neuralmemory/
+
 # Claude
 claude/
 skills/

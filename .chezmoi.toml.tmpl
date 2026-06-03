@@ -1,4 +1,14 @@
 {{- $interactive := not (or (env "CI") (env "GITHUB_ACTIONS")) -}}
+{{- $enableDock := eq (env "CHEZMOI_ENABLE_DOCK") "1" -}}
+{{- $enableMasApps := eq (env "CHEZMOI_ENABLE_MAS_APPS") "1" -}}
+{{- $enablePersonalApps := eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1" -}}
+{{- $enableSshKeygen := eq (env "CHEZMOI_ENABLE_SSH_KEYGEN") "1" -}}
+{{- if $interactive -}}
+{{-   $enableDock = promptBool "Enable Dock customization? (macOS only)" -}}
+{{-   $enableMasApps = promptBool "Enable Mac App Store apps?" -}}
+{{-   $enablePersonalApps = promptBool "Enable personal apps (evkey, Telegram, etc.)?" -}}
+{{-   $enableSshKeygen = promptBool "Generate SSH key?" -}}
+{{- end -}}
 
 {{- $email := env "CHEZMOI_GIT_EMAIL" -}}
 {{- $name := env "CHEZMOI_GIT_NAME" -}}
@@ -62,10 +72,10 @@
         { dir = {{ printf "%q" $config.dir }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }} },
         {{- end }}
     ]
-    enable_dock = {{ eq (env "CHEZMOI_ENABLE_DOCK") "1" }}
-    enable_mas_apps = {{ eq (env "CHEZMOI_ENABLE_MAS_APPS") "1" }}
-    enable_personal_apps = {{ eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1" }}
-    enable_ssh_keygen = {{ eq (env "CHEZMOI_ENABLE_SSH_KEYGEN") "1" }}
+    enable_dock = {{ $enableDock }}
+    enable_mas_apps = {{ $enableMasApps }}
+    enable_personal_apps = {{ $enablePersonalApps }}
+    enable_ssh_keygen = {{ $enableSshKeygen }}
 
 [apply]
     backup = true
