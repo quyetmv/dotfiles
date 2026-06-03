@@ -61,6 +61,8 @@
 {{-   end -}}
 {{- end -}}
 
+encryption = "age"
+
 [data]
     email = {{ printf "%q" $email }}
     github_user = {{ printf "%q" $githubUser }}
@@ -79,6 +81,10 @@
 
 [apply]
     backup = true
+
+[age]
+    identity = "~/.config/chezmoi/key.txt"
+    recipient = "age1tc9lzhe5dtptgc7svn5mw0d062fnuav4zfgck8pft84dpc2vydzqak5hsa"
 
 [edit]
     command = "nvim"
