@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Install packages and developer tools
-# macOS: Homebrew bundle + mise
-# Linux: mise only (apt packages installed by setup-linux.sh)
-
+# tool-versions hash: {{ include (joinPath .chezmoi.sourceDir "dot_tool-versions") | sha256sum }}
+# Brewfile hash:      {{ include (joinPath .chezmoi.sourceDir "Brewfile.tmpl") | sha256sum }}
 set -euo pipefail
 
 CHEZMOI_SOURCE_DIR={{ printf "%q" .chezmoi.sourceDir }}
