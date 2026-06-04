@@ -47,4 +47,5 @@ jobs:
             --dry-run \
             --force \
             --no-tty \
+            --exclude=encrypted \
             --source="$PWD"
