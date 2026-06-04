@@ -79,7 +79,7 @@ fi
 unset config_file
 
 ### Source private configuration
-for config_file in ~/.secrets/private ~/.{extra,functions}; do
+for config_file in ~/.secrets/.private ~/.{extra,functions}; do
     [[ -r "$config_file" ]] && source "$config_file"
 done
 unset config_file
