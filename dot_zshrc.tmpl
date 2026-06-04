@@ -78,8 +78,8 @@ if [[ -d ~/.zsh.d ]]; then
 fi
 unset config_file
 
-### Source legacy or private configuration files
-for config_file in ~/.{extra,private,functions}; do
+### Source private configuration
+for config_file in ~/.secrets/private ~/.{extra,functions}; do
     [[ -r "$config_file" ]] && source "$config_file"
 done
 unset config_file
