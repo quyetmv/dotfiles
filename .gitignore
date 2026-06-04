@@ -85,6 +85,7 @@ chezmoi/**/*company*
 
 # Secrets and credentials (paranoid mode)
 **/*secret*
+!private_dot_secrets/
 **/*credential*
 **/*password*
 **/*token*
