@@ -180,12 +180,18 @@ echo ""
 echo "7) dry-run apply to temp destination"
 tmp_home="$(mktemp -d)"
 tmp_state="$tmp_home/chezmoi-state.boltdb"
+tmp_config="$(mktemp).toml"
+# Provide minimal config so chezmoi doesn't fail on missing encryption key.
+# Encrypted files are skipped in CI since the age key is not available.
+printf '[data]\n  email = "ci@example.com"\n  name = "CI"\n  github_user = "ci"\n  work_configs = []\n  enable_dock = false\n  enable_mas_apps = false\n  enable_personal_apps = false\n  enable_ssh_keygen = false\n' > "$tmp_config"
 if $CHEZMOI apply \
     --dry-run \
     --force \
     --no-tty \
+    --exclude=encrypted \
     --source "$CHEZMOI_SOURCE" \
     --destination "$tmp_home" \
+    --config "$tmp_config" \
     --persistent-state "$tmp_state" \
     >/dev/null 2>&1; then
     pass "chezmoi apply --dry-run succeeded"
@@ -193,7 +199,7 @@ else
     fail "chezmoi apply --dry-run failed"
 fi
 rm -rf "$tmp_home"
-rm -f "$tmp_state"
+rm -f "$tmp_state" "$tmp_config"
 
 echo ""
 echo "8) secrets scan"
