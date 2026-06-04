@@ -9,9 +9,9 @@ go 1.24
 uv latest
 
 # Infrastructure and cloud
-terraform 1.11
+terraform 1.15.3
 terraform-docs 0.20
-terragrunt 0.77
+terragrunt 1.0.4
 kubectl 1.32
 helm 3.17
 kustomize 5.6
@@ -19,7 +19,6 @@ awscli 2
 sops 3.10
 age 1.2
 vault latest
-#k9s latest
 k9s v0.40.0
 infracost latest
 lazydocker latest
