@@ -127,8 +127,19 @@ export FZF_DEFAULT_OPTS=" \
 --multi"
 
 ### Key bindings
-# Right arrow accepts the current autosuggestion (more conventional than Tab Tab)
+# Right arrow accepts autosuggestion; falls back to forward-char when no suggestion
 bindkey '^[[C' autosuggest-accept
+
+# Word navigation (Ctrl+Left/Right — sequences sent by iTerm2)
+bindkey '^[[1;5D' backward-word
+bindkey '^[[1;5C' forward-word
+
+# Line navigation
+bindkey '^[[H' beginning-of-line   # Home key
+bindkey '^[[F' end-of-line         # End key
+
+# Delete key (forward delete)
+bindkey '^[[3~' delete-char
 {{- if eq .chezmoi.os "linux" }}
 # Keep Ctrl-R usable even when Atuin/fzf key bindings are unavailable.
 if [[ "${DOTFILES_FZF_KEYBINDINGS_LOADED:-0}" -eq 0 ]]; then
