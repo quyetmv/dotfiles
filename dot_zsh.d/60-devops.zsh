@@ -2,7 +2,7 @@
 # Bitwarden items: name="proxmox-<cluster>", username=URL, password=API_TOKEN
 bwu() {
   export BW_SESSION
-  BW_SESSION="$(bw unlock --raw)" || { echo "bwu: failed (run 'bw login' first?)"; return 1; }
+  BW_SESSION="$(bw unlock --raw </dev/tty)" || { echo "bwu: failed (run 'bw login' first?)"; return 1; }
   echo "bitwarden: unlocked"
 }
 
@@ -11,10 +11,12 @@ pxuse() {
   local cluster="${1:?Usage: pxuse <cluster-name>}"
   [[ -n "${BW_SESSION:-}" ]] || { echo "pxuse: run 'bwu' first"; return 1; }
 
-  local url token
-  url="$(bw get username "proxmox-$cluster" --session "$BW_SESSION" 2>/dev/null)"
-  token="$(bw get password "proxmox-$cluster" --session "$BW_SESSION" 2>/dev/null)"
-  [[ -n "$url" && -n "$token" ]] || { echo "pxuse: 'proxmox-$cluster' not found in Bitwarden"; return 1; }
+  local item url token
+  item="$(bw get item "proxmox-$cluster" --session "$BW_SESSION" 2>/dev/null)"
+  [[ -n "$item" ]] || { echo "pxuse: 'proxmox-$cluster' not found in Bitwarden"; return 1; }
+
+  url="$(printf '%s' "$item" | jq -r '.login.username')"
+  token="$(printf '%s' "$item" | jq -r '.login.password')"
 
   export PROXMOX_VE_URL="$url"
   export PROXMOX_VE_API_TOKEN="$token"
