@@ -1,19 +1,27 @@
-# Bitwarden session unlock
+# Bitwarden session unlock + local REST server (eliminates per-call Node.js startup)
 # Bitwarden items: name="proxmox-<cluster>", username=URL, password=API_TOKEN
+_BW_PORT=8087
+
 bwu() {
   export BW_SESSION
   BW_SESSION="$(bw unlock --raw </dev/tty)" || { echo "bwu: failed (run 'bw login' first?)"; return 1; }
+
+  pkill -f "bw serve" 2>/dev/null
+  BW_SESSION="$BW_SESSION" bw serve --hostname localhost --port "$_BW_PORT" &>/dev/null &
+  disown
+  sleep 0.5
   echo "bitwarden: unlocked"
 }
 
-# Proxmox cluster context switcher (pulls from Bitwarden)
+_bw_api() { curl -sf "http://localhost:${_BW_PORT}/$1"; }
+
 pxuse() {
   local cluster="${1:?Usage: pxuse <cluster-name>}"
-  [[ -n "${BW_SESSION:-}" ]] || { echo "pxuse: run 'bwu' first"; return 1; }
 
   local item url token
-  item="$(bw get item "proxmox-$cluster" --session "$BW_SESSION" 2>/dev/null)"
-  [[ -n "$item" ]] || { echo "pxuse: 'proxmox-$cluster' not found in Bitwarden"; return 1; }
+  item="$(_bw_api "list/object/items?search=proxmox-$cluster" \
+    | jq -r --arg n "proxmox-$cluster" '.data.data[] | select(.name == $n)')"
+  [[ -n "$item" && "$item" != "null" ]] || { echo "pxuse: 'proxmox-$cluster' not found (run bwu?)"; return 1; }
 
   url="$(printf '%s' "$item" | jq -r '.login.username')"
   token="$(printf '%s' "$item" | jq -r '.login.password')"
@@ -25,10 +33,9 @@ pxuse() {
 }
 
 pxlist() {
-  [[ -n "${BW_SESSION:-}" ]] || { echo "pxlist: run 'bwu' first"; return 1; }
-  bw list items --search proxmox --session "$BW_SESSION" 2>/dev/null \
-    | grep -o '"name":"proxmox-[^"]*"' \
-    | sed 's/"name":"proxmox-//;s/"//'
+  _bw_api "list/object/items?search=proxmox" \
+    | jq -r '.data.data[].name | select(startswith("proxmox-"))' \
+    | sed 's/^proxmox-//'
 }
 
 # Kubernetes
