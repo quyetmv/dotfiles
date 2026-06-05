@@ -127,16 +127,28 @@ export FZF_DEFAULT_OPTS=" \
 --multi"
 
 ### Key bindings
-# Right arrow accepts autosuggestion; falls back to forward-char when no suggestion
-bindkey '^[[C' autosuggest-accept
+# Right arrow: accept suggestion if visible, else move forward one char
+_autosuggest_accept_or_forward_char() {
+  if [[ -n "$POSTDISPLAY" ]]; then
+    zle autosuggest-accept
+  else
+    zle forward-char
+  fi
+}
+zle -N _autosuggest_accept_or_forward_char
+bindkey '^[[C' _autosuggest_accept_or_forward_char
 
 # Word navigation (Ctrl+Left/Right — sequences sent by iTerm2)
 bindkey '^[[1;5D' backward-word
 bindkey '^[[1;5C' forward-word
 
-# Line navigation
-bindkey '^[[H' beginning-of-line   # Home key
-bindkey '^[[F' end-of-line         # End key
+# Line navigation — bind both common sequences for Home/End (terminal-dependent)
+bindkey '^[[H'  beginning-of-line   # iTerm2 default
+bindkey '^[[1~' beginning-of-line   # Linux console / some profiles
+bindkey '^[OH'  beginning-of-line   # VT100 application mode
+bindkey '^[[F'  end-of-line
+bindkey '^[[4~' end-of-line
+bindkey '^[OF'  end-of-line
 
 # Delete key (forward delete)
 bindkey '^[[3~' delete-char
