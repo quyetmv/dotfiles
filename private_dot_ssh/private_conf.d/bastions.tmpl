@@ -1,0 +1,7 @@
+{{- range .ssh_bastions }}
+Host {{ .range }}
+    ProxyJump {{ .bastion }}
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+{{ end -}}
