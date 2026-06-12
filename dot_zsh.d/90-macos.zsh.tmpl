@@ -9,6 +9,9 @@ alias bc='brew install --cask'
 
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
+# keg-only formulae not linked by default
+[[ -d "${HOMEBREW_PREFIX}/opt/mysql-client/bin" ]] && path=("${HOMEBREW_PREFIX}/opt/mysql-client/bin" $path)
+
 # Lock the screen
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 
