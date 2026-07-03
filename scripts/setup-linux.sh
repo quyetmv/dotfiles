@@ -180,15 +180,6 @@ install_zsh_extras() {
         log_info "Powerlevel10k already installed"
     fi
 
-    local z_dir="$HOME/.local/share/z"
-    if [[ ! -d "$z_dir" ]]; then
-        mkdir -p "$(dirname "$z_dir")"
-        git clone --depth=1 https://github.com/rupa/z.git "$z_dir"
-        log_success "z installed"
-    else
-        log_info "z already installed"
-    fi
-
     install_fonts
 
     log_info "lazygit, lsd, and bat are now managed by mise (see dot_tool-versions)."

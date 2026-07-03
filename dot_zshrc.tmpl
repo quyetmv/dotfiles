@@ -165,7 +165,6 @@ unset DOTFILES_FZF_KEYBINDINGS_LOADED
 # here to avoid duplicate PATH entries.
 typeset -U path  # deduplicate PATH entries
 path=(
-  "$HOME/.local/share/mise/shims"
   "$HOME/.local/bin"
   "$HOME/.claude/skills/gstack/bin"
   "$HOME/.devops-env/.venv/bin"
@@ -178,15 +177,6 @@ path=(
 # Man path (macOS Homebrew)
 export MANPATH="$HOMEBREW_PREFIX/share/man${MANPATH+:$MANPATH}:"
 export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
-{{- end }}
-
-### Tool configurations
-{{- if eq .chezmoi.os "darwin" }}
-# Z jump configuration (Homebrew)
-[[ -r "$HOMEBREW_PREFIX/etc/profile.d/z.sh" ]] && . "$HOMEBREW_PREFIX/etc/profile.d/z.sh"
-{{- else if eq .chezmoi.os "linux" }}
-# Z jump configuration (manual install)
-[[ -r "$HOME/.local/share/z/z.sh" ]] && . "$HOME/.local/share/z/z.sh"
 {{- end }}
 
 # Load Powerlevel10k configuration
