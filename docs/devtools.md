@@ -59,7 +59,7 @@ Chi tiết về các tool được quản lý trong dotfiles.
 ## Homebrew (`Brewfile.tmpl`)
 
 ### Cross-platform (macOS + Linuxbrew)
-Shell tools: `bat`, `fd`, `fzf`, `ripgrep`, `lsd`, `lazygit`, `neovim`, `tmux`, `mise`, `chezmoi`, `powerlevel10k`, `z`, zsh plugins, `mysql-client`, `redis` (`redis-cli`).
+Shell tools: `fd`, `fzf`, `ripgrep`, `neovim`, `tmux`, `mise`, `chezmoi`, `powerlevel10k`, `zoxide`, zsh plugins, `mysql-client`, `redis` (`redis-cli`). (`bat`, `lazygit`, `jq` là mise-owned — xem `dot_tool-versions`.)
 
 ### macOS only (casks)
 | App | Ghi chú |
