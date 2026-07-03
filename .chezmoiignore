@@ -49,6 +49,9 @@ Dockerfile
 Makefile
 scripts/
 README.md
+README.vn.md
+Plans.md
+out/
 LICENSE
 ansible.cfg
 bin/chezmoi
