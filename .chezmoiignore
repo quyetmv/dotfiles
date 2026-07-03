@@ -21,6 +21,9 @@
 # Neovim lockfile (managed by lazy.nvim, changes on every plugin update)
 .config/nvim/lazy-lock.json
 
+# Claude Code plugin manager state (rewritten on every plugin auto-update)
+.claude/plugins/installed_plugins.json
+
 # App state/cache
 .cache/
 .local/share/
