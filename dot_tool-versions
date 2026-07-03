@@ -27,7 +27,6 @@ kubens latest
 kubecm latest
 lazygit latest
 bat latest
-sshpass latest
 
 # Versioned CLI utilities
 
