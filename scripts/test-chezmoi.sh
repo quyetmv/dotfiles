@@ -183,7 +183,7 @@ tmp_state="$tmp_home/chezmoi-state.boltdb"
 tmp_config="$(mktemp).toml"
 # Provide minimal config so chezmoi doesn't fail on missing encryption key.
 # Encrypted files are skipped in CI since the age key is not available.
-printf '[data]\n  email = "ci@example.com"\n  name = "CI"\n  github_user = "ci"\n  work_configs = []\n  enable_dock = false\n  enable_mas_apps = false\n  enable_personal_apps = false\n  enable_ssh_keygen = false\n' > "$tmp_config"
+printf '[data]\n  email = "ci@example.com"\n  name = "CI"\n  github_user = "ci"\n  work_configs = []\n  ssh_bastions = []\n  enable_dock = false\n  enable_mas_apps = false\n  enable_personal_apps = false\n  enable_ssh_keygen = false\n' > "$tmp_config"
 if $CHEZMOI apply \
     --dry-run \
     --force \
@@ -203,7 +203,11 @@ rm -f "$tmp_state" "$tmp_config"
 
 echo ""
 echo "8) secrets scan"
-SECRET_PATTERNS="password|secret|token|api[_-]?key|private[_-]?key"
+# Detect literal secret values, not keyword mentions (variable names, comments):
+#  - quoted literal (8+ chars, not a $var or <placeholder> or {{template}}) assigned to a secret-ish name
+#  - PEM private key headers
+#  - well-known token prefixes (GitLab, GitHub, OpenAI-style, AWS access key, Slack)
+SECRET_PATTERNS="(password|passwd|secret|token|api[_-]?key)['\"]?[[:space:]]*[:=][[:space:]]*['\"][^'\"\$<{][^'\"]{7,}|BEGIN [A-Z ]*PRIVATE KEY|glpat-[A-Za-z0-9_-]{10,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}"
 if command -v rg >/dev/null 2>&1; then
     SECRETS="$(rg -nI -uu -i -e "$SECRET_PATTERNS" "$CHEZMOI_SOURCE" \
         --glob '!dot_claude/**' \
