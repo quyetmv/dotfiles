@@ -17,39 +17,39 @@ bwu() {
 
 _bw_api() { curl -sf "http://localhost:${_BW_PORT}/$1"; }
 
-pxuse() {
-  local cluster="${1:?Usage: pxuse <cluster-name>}"
-
-  local item url token
-  item="$(_bw_api "list/object/items?search=proxmox-$cluster" \
-    | jq -r --arg n "proxmox-$cluster" '.data.data[] | select(.name == $n)')"
-  [[ -n "$item" && "$item" != "null" ]] || { echo "pxuse: 'proxmox-$cluster' not found (run bwu?)"; return 1; }
-
-  url="$(printf '%s' "$item" | jq -r '.login.username')"
-  token="$(printf '%s' "$item" | jq -r '.login.password')"
-
-  export PROXMOX_VE_URL="$url"
-  export PROXMOX_VE_API_TOKEN="$token"
-  export PROXMOX_CLUSTER="$cluster"
-  echo "proxmox: $cluster → $PROXMOX_VE_URL"
-}
-
 pxlist() {
   _bw_api "list/object/items?search=proxmox" \
     | jq -r '.data.data[].name | select(startswith("proxmox-"))' \
     | sed 's/^proxmox-//'
 }
 
-# Bitwarden item: name="gitlab-token", password=personal access token
-glu() {
-  local item token
-  item="$(_bw_api "list/object/items?search=gitlab-token" \
-    | jq -r '.data.data[] | select(.name == "gitlab-token")')"
-  [[ -n "$item" && "$item" != "null" ]] || { echo "glu: 'gitlab-token' not found (run bwu?)"; return 1; }
+# bwuse <cluster-name> -> proxmox-<cluster-name>: PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER
+#                       -> gitlab-token (if present): GITLAB_TOKEN
+bwuse() {
+  local cluster="${1:?Usage: bwuse <cluster-name>}"
 
+  local item url token
+  item="$(_bw_api "list/object/items?search=proxmox-$cluster" \
+    | jq -r --arg n "proxmox-$cluster" '.data.data[] | select(.name == $n)')"
+  [[ -n "$item" && "$item" != "null" ]] || { echo "bwuse: 'proxmox-$cluster' not found (run bwu?)"; return 1; }
+
+  url="$(printf '%s' "$item" | jq -r '.login.username')"
   token="$(printf '%s' "$item" | jq -r '.login.password')"
-  export GITLAB_TOKEN="$token"
-  echo "gitlab: token exported"
+  export PROXMOX_VE_URL="$url"
+  export PROXMOX_VE_API_TOKEN="$token"
+  export PROXMOX_CLUSTER="$cluster"
+  echo "proxmox: $cluster → $PROXMOX_VE_URL"
+
+  local gl_item gl_token
+  gl_item="$(_bw_api "list/object/items?search=gitlab-token" \
+    | jq -r '.data.data[] | select(.name == "gitlab-token")')"
+  if [[ -n "$gl_item" && "$gl_item" != "null" ]]; then
+    gl_token="$(printf '%s' "$gl_item" | jq -r '.login.password')"
+    export GITLAB_TOKEN="$gl_token"
+    echo "gitlab: token exported"
+  else
+    echo "bwuse: 'gitlab-token' not found, skipped"
+  fi
 }
 
 # Kubernetes

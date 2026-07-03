@@ -309,20 +309,20 @@ bwu   # bw serve caches vault state at startup, so re-run to pick up the new ite
 
 ```bash
 pxlist            # list all proxmox-* clusters
-pxuse <cluster>   # export PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER
+bwuse <cluster>   # export PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER, and GITLAB_TOKEN if present
 ```
 
 ### GitLab token
 
-Single item, name `gitlab-token`, only `login.password` used:
+Single item, name `gitlab-token`, only `login.password` used. `bwuse <cluster>` picks it up automatically alongside the Proxmox credentials:
 
 ```bash
 bw get template item \
   | jq '.type=1 | .name="gitlab-token" | .notes="" | .login.password="<personal-access-token>"' \
   | bw encode | bw create item
 
-bwu     # re-run to refresh bw serve
-glu     # export GITLAB_TOKEN
+bwu               # re-run to refresh bw serve
+bwuse <cluster>   # exports PROXMOX_* and GITLAB_TOKEN together
 ```
 
 ## Commands
