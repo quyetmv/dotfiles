@@ -17,13 +17,7 @@ alias cls="clear"
 alias count='find . -type f | wc -l'
 alias cpv='rsync -ah --info=progress2'
 
-# Listing
-alias l='ls -l'
-alias ll='ls -l'
-alias la='ls -A'
-alias lla='ls -lA'
-alias l.='ls -A | grep "^\."'
-
+# Listing aliases live in 80-modern-tools.zsh (eza with ls fallback)
 
 # Editors and docs
 

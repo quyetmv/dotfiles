@@ -13,22 +13,25 @@ if command -v atuin >/dev/null 2>&1; then
     bindkey '^A' beginning-of-line
 fi
 
-# iTerm2 Natural Text Editing (Cmd+←/→)
-bindkey '\e[H' beginning-of-line
-bindkey '\e[F' end-of-line
-
 # Zoxide (Smart CD)
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
 fi
 
-# Eza (Modern LS)
+# Listing aliases (eza when available, plain ls fallback)
 if command -v eza >/dev/null 2>&1; then
     alias ls="eza --icons --group-directories-first"
     alias ll="eza -lh --icons --group-directories-first"
     alias la="eza -a --icons --group-directories-first"
+    alias lla="eza -lha --icons --group-directories-first"
     alias lt="eza --tree --icons"
+else
+    alias ll="ls -l"
+    alias la="ls -A"
+    alias lla="ls -lA"
 fi
+alias l="ll"
+alias l.='ls -A | grep "^\."'
 
 # Fastfetch (System Info)
 if command -v fastfetch >/dev/null 2>&1; then
