@@ -92,3 +92,6 @@ chezmoi/**/*company*
 **/.env
 **/.env.*
 !**/.env.example
+
+# Neovim runtime log
+.nvimlog
