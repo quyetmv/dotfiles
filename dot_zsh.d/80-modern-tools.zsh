@@ -13,6 +13,10 @@ if command -v atuin >/dev/null 2>&1; then
     bindkey '^A' beginning-of-line
 fi
 
+# iTerm2 Natural Text Editing (Cmd+←/→)
+bindkey '\e[H' beginning-of-line
+bindkey '\e[F' end-of-line
+
 # Zoxide (Smart CD)
 if command -v zoxide >/dev/null 2>&1; then
     eval "$(zoxide init zsh)"
