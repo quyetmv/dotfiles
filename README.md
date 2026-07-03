@@ -72,11 +72,14 @@ make sync                # after editing Brewfile.tmpl or dot_tool-versions
 
 These dotfiles integrate the most modern CLI tools to optimize workflow efficiency:
 
-### [Starship Prompt](https://starship.rs/) 🌟
+### [Powerlevel10k](https://github.com/romkatv/powerlevel10k) 🌟 (default prompt)
 - **Features:**
-  - Blazing fast prompt, smartly displaying DevOps context (K8s namespace, AWS profile, Terraform workspace).
-  - Built-in real-time alerts when commands take too long (`cmd_duration`).
-  - Highly customizable, displays standard Nerd Fonts icons.
+  - Instant prompt: shell is usable before plugins finish loading.
+  - DevOps-tuned config in `~/.p10k.zsh`: shows `k8s`, `tf`, `aws` only when relevant, distinct colors for `prod/stage/dev`.
+
+### [Starship Prompt](https://starship.rs/) ✨ (opt-in)
+- Installed but inactive by default — enable with `export DOTFILES_PROMPT=starship` before shell startup.
+- Cross-shell prompt with DevOps context (K8s namespace, AWS profile, Terraform workspace) and `cmd_duration` alerts.
 
 ### [Atuin](https://atuin.sh/) 🕰️
 - **Features:**

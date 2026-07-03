@@ -281,6 +281,47 @@ Thư mục `dotfiles/` trong root chỉ nên dùng làm repo tham chiếu tạm 
 Prompt theme được cấu hình riêng ở `~/.p10k.zsh`.
 Prompt này được tune cho DevOps workflow: chỉ hiện `k8s`, `tf`, `aws` khi command hiện tại có liên quan, và đổi màu rõ hơn cho `prod/stage/dev`.
 
+## Secrets Management (Bitwarden CLI) 🔐
+
+Credentials Proxmox lưu trong Bitwarden, fetch on-demand qua `dot_zsh.d/60-devops.zsh`. Item đặt tên theo convention `proxmox-<cluster>`, với `login.username` = API URL và `login.password` = API token.
+
+### Setup
+
+```bash
+bw login    # login device 1 lần
+bwu         # unlock vault + start REST server local trên localhost:8087
+```
+
+### Thêm vault item
+
+```bash
+bw get template item \
+  | jq '.type=1 | .name="proxmox-<cluster>" | .notes="" | .login.username="<api-url>" | .login.password="<api-token>"' \
+  | bw encode | bw create item
+
+bwu   # bw serve cache vault lúc start, chạy lại để nhận item mới
+```
+
+### List & use
+
+```bash
+pxlist            # list các cluster proxmox-*
+bwuse <cluster>   # export PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER, kèm GITLAB_TOKEN nếu có
+```
+
+### GitLab token
+
+1 item duy nhất, tên `gitlab-token`, chỉ dùng `login.password`. `bwuse <cluster>` tự nhận nó cùng lúc với credentials Proxmox:
+
+```bash
+bw get template item \
+  | jq '.type=1 | .name="gitlab-token" | .notes="" | .login.password="<personal-access-token>"' \
+  | bw encode | bw create item
+
+bwu               # chạy lại để refresh bw serve
+bwuse <cluster>   # export PROXMOX_* và GITLAB_TOKEN cùng lúc
+```
+
 ## Commands
 
 | Command | Purpose |
