@@ -6,6 +6,8 @@ bwu() {
   export BW_SESSION
   BW_SESSION="$(bw unlock --raw </dev/tty)" || { echo "bwu: failed (run 'bw login' first?)"; return 1; }
 
+  BW_SESSION="$BW_SESSION" bw sync &>/dev/null
+
   pkill -f "bw serve" 2>/dev/null
   BW_SESSION="$BW_SESSION" bw serve --hostname localhost --port "$_BW_PORT" &>/dev/null &
   disown
@@ -36,6 +38,18 @@ pxlist() {
   _bw_api "list/object/items?search=proxmox" \
     | jq -r '.data.data[].name | select(startswith("proxmox-"))' \
     | sed 's/^proxmox-//'
+}
+
+# Bitwarden item: name="gitlab-token", password=personal access token
+glu() {
+  local item token
+  item="$(_bw_api "list/object/items?search=gitlab-token" \
+    | jq -r '.data.data[] | select(.name == "gitlab-token")')"
+  [[ -n "$item" && "$item" != "null" ]] || { echo "glu: 'gitlab-token' not found (run bwu?)"; return 1; }
+
+  token="$(printf '%s' "$item" | jq -r '.login.password')"
+  export GITLAB_TOKEN="$token"
+  echo "gitlab: token exported"
 }
 
 # Kubernetes

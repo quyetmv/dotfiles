@@ -284,6 +284,47 @@ The `dotfiles/` directory in the root should only be used as a temporary referen
 The prompt theme is configured separately in `~/.p10k.zsh`.
 This prompt is tuned for DevOps workflows: it only shows `k8s`, `tf`, `aws` when the current command is relevant, and changes colors more distinctly for `prod/stage/dev`.
 
+## Secrets Management (Bitwarden CLI) 🔐
+
+Proxmox credentials are stored in Bitwarden and fetched on demand via `dot_zsh.d/60-devops.zsh`. Items follow the naming convention `proxmox-<cluster>`, with `login.username` = API URL and `login.password` = API token.
+
+### Setup
+
+```bash
+bw login    # one-time device login
+bwu         # unlock vault + start local REST server on localhost:8087
+```
+
+### Add a vault item
+
+```bash
+bw get template item \
+  | jq '.type=1 | .name="proxmox-<cluster>" | .notes="" | .login.username="<api-url>" | .login.password="<api-token>"' \
+  | bw encode | bw create item
+
+bwu   # bw serve caches vault state at startup, so re-run to pick up the new item
+```
+
+### List & use
+
+```bash
+pxlist            # list all proxmox-* clusters
+pxuse <cluster>   # export PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER
+```
+
+### GitLab token
+
+Single item, name `gitlab-token`, only `login.password` used:
+
+```bash
+bw get template item \
+  | jq '.type=1 | .name="gitlab-token" | .notes="" | .login.password="<personal-access-token>"' \
+  | bw encode | bw create item
+
+bwu     # re-run to refresh bw serve
+glu     # export GITLAB_TOKEN
+```
+
 ## Commands
 
 | Command | Purpose |
