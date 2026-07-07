@@ -91,6 +91,19 @@ install_fonts() {
 }
 
 install_apt_packages() {
+    # Git >= 2.35 (zdiff3 in .gitconfig): Ubuntu LTS ships older, add the
+    # official git-core PPA. Non-fatal — the gitconfig template falls back
+    # to diff3 on old git anyway.
+    if [[ -r /etc/os-release ]] && grep -q '^ID=ubuntu' /etc/os-release; then
+        if ! command -v add-apt-repository >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y software-properties-common
+        fi
+        if ! grep -rq "git-core/ppa" /etc/apt/sources.list.d/ 2>/dev/null; then
+            log_info "Adding git-core PPA (git >= 2.35)..."
+            sudo add-apt-repository -y ppa:git-core/ppa || log_warning "git-core PPA failed; keeping distro git"
+        fi
+    fi
+
     log_info "Installing default apt packages..."
     local pkgs=(
         apt-transport-https
