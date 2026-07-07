@@ -2,7 +2,6 @@
 {{ $enable_personal_apps := or (index . "enable_personal_apps") (eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1") -}}
 
 # Core CLI and shell dependencies
-brew "atuin"
 brew "bitwarden-cli"
 brew "bash"
 brew "bash-completion2"
