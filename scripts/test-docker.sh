@@ -31,17 +31,20 @@ build_github() {
 run_full() {
     local target_image=$1
     local source_desc=$2
-    
+    local tty_flags="-i"
+    [ -t 0 ] && tty_flags="-it"
+
     echo "🚀 Running full setup and validation ($source_desc)..."
-    docker run --rm -it "$target_image" zsh -c '
+    docker run --rm $tty_flags "$target_image" zsh -c '
         echo "=== Step 1: setup-linux.sh (apt packages) ==="
         cd $HOME/dotfiles
         ./scripts/setup-linux.sh packages
 
         echo ""
         echo "=== Step 2: chezmoi apply ==="
-        # Re-init to make sure we use the right source
-        chezmoi init --source=$HOME/dotfiles --apply --no-tty
+        # Re-init to make sure we use the right source.
+        # Test container has no age key, so skip encrypted targets.
+        chezmoi init --source=$HOME/dotfiles --apply --no-tty --exclude=encrypted
 
         echo ""
         echo "=== Step 3: test-chezmoi.sh ==="
@@ -53,7 +56,8 @@ run_full() {
 
         echo ""
         echo "✅ Full test complete!"
-        exec zsh
+        # Drop into a shell only when a human is attached
+        [ -t 0 ] && exec zsh || true
     '
 }
 
