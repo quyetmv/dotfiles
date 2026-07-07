@@ -75,7 +75,15 @@
 {{- end -}}
 
 encryption = "age"
-sourceDir = "~/workspace/personal/projects/dotfiles"
+{{- /* Prefer the workspace checkout when it exists; otherwise pin wherever
+       the source actually lives (fresh clone, container, CI). A hardcoded
+       path broke apply on any machine without that exact layout. */}}
+{{- $workspaceSrc := joinPath .chezmoi.homeDir "workspace/personal/projects/dotfiles" }}
+{{- if stat $workspaceSrc }}
+sourceDir = {{ $workspaceSrc | quote }}
+{{- else }}
+sourceDir = {{ .chezmoi.sourceDir | quote }}
+{{- end }}
 
 [data]
     email = {{ printf "%q" $email }}
