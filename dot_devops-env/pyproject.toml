@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12,<3.15"
 dependencies = [
     # Automation and infrastructure
-    "ansible-core==2.16.14",
+    "ansible==5.7.1",
+    "ansible-base==2.10.2",
+    "ansible-core==2.12.5",
     "hvac==2.4.0",
     "jira==3.10.5",
     "kubernetes>=34.1.0",
@@ -18,7 +20,8 @@ dependencies = [
     "rdbtools==0.1.15",
     "sentry-sdk==2.43.0",
     # Data and serialization
-    "requests>=2.31",
+    "requests>=2.25.1",
+    "urllib3<1.26.5",
     "pytz>=2024.1",
     "pyyaml==6.0.2",
     "jq==1.8.0",
