@@ -4,9 +4,11 @@
 {{- $enablePersonalApps := eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1" -}}
 {{- $enableSshKeygen := eq (env "CHEZMOI_ENABLE_SSH_KEYGEN") "1" -}}
 {{- if $interactive -}}
-{{-   $enableDock = promptBool "Enable Dock customization? (macOS only)" -}}
-{{-   $enableMasApps = promptBool "Enable Mac App Store apps?" -}}
-{{-   $enablePersonalApps = promptBool "Enable personal apps (evkey, Telegram, etc.)?" -}}
+{{-   if eq .chezmoi.os "darwin" -}}
+{{-     $enableDock = promptBool "Enable Dock customization?" -}}
+{{-     $enableMasApps = promptBool "Enable Mac App Store apps?" -}}
+{{-     $enablePersonalApps = promptBool "Enable personal apps (evkey, Telegram, etc.)?" -}}
+{{-   end -}}
 {{-   $enableSshKeygen = promptBool "Generate SSH key?" -}}
 {{- end -}}
 

@@ -123,6 +123,7 @@ install_apt_packages() {
         redis
         ripgrep
         software-properties-common
+        sshpass
         tcpdump
         telnet
         tmux
