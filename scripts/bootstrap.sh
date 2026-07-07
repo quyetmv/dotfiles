@@ -125,13 +125,14 @@ restore_age_key() {
     bw sync >/dev/null 2>&1 || true
 
     mkdir -p "$(dirname "$AGE_KEY")"
-    if bw get notes "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && [[ -s "$AGE_KEY" ]]; then
+    # Item is a Login whose password field holds the AGE-SECRET-KEY line
+    if bw get password "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
         chmod 600 "$AGE_KEY"
         log "Age key restored to $AGE_KEY"
         return 0
     fi
     rm -f "$AGE_KEY"
-    warn "Item '$BW_KEY_ITEM' not found in vault."
+    warn "Item '$BW_KEY_ITEM' not found in vault (or password field lacks an age key)."
     return 1
 }
 
