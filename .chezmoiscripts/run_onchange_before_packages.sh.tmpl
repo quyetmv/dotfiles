@@ -70,12 +70,14 @@ cp "$TOOL_VERSIONS_SOURCE" "$tmpdir/.tool-versions"
 echo "🔧 Installing runtimes with mise..."
 mise install --yes --cd "$tmpdir"
 
-# tmux plugin manager
+# tmux plugin manager (non-fatal: a network hiccup here must not abort
+# the whole chezmoi apply before any dotfiles are deployed)
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
     if command -v git >/dev/null 2>&1; then
         echo "🔌 Installing tmux plugin manager..."
         mkdir -p "$HOME/.tmux/plugins"
-        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+        git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" \
+            || echo "⚠️  Could not clone tpm (network?). Re-run 'chezmoi apply' to retry."
     else
         echo "⚠️  git not found. Skipping tmux plugin manager installation."
     fi
