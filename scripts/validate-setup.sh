@@ -12,6 +12,10 @@ ERRORS=0
 WARNINGS=0
 OS="$(uname -s)"
 
+# mise-managed tools (nvim, k9s, ...) live behind shims that interactive
+# shells get via `mise activate`; expose them to this non-interactive script
+[[ -d "$HOME/.local/share/mise/shims" ]] && export PATH="$HOME/.local/share/mise/shims:$PATH"
+
 pass() { echo -e "${GREEN}✓${NC} $1"; }
 fail() { echo -e "${RED}✗${NC} $1"; ERRORS=$((ERRORS + 1)); }
 warn() { echo -e "${YELLOW}⚠${NC}  $1"; WARNINGS=$((WARNINGS + 1)); }
