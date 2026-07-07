@@ -50,14 +50,28 @@ if ! command -v chezmoi >/dev/null 2>&1; then
 fi
 log "chezmoi: $(command -v chezmoi)"
 
-# --- init (clone source + generate config, no apply yet) --------------------
-if [[ -n "$REPO_ROOT" ]]; then
-    init_args=(init --source "$REPO_ROOT")
-else
-    init_args=(init "${CHEZMOI_REPO:-$DEFAULT_REPO}")
+# --- source checkout (clone or refresh — `chezmoi init <repo>` silently
+# reuses a stale existing clone without pulling, which repeatedly shipped
+# outdated templates; manage the clone ourselves) -----------------------------
+if [[ -z "$REPO_ROOT" ]]; then
+    repo="${CHEZMOI_REPO:-$DEFAULT_REPO}"
+    case "$repo" in
+        *://*|git@*) repo_url="$repo" ;;
+        *)           repo_url="https://github.com/${repo}.git" ;;
+    esac
+    REPO_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
+    if [[ -d "$REPO_ROOT/.git" ]]; then
+        log "Refreshing existing clone at $REPO_ROOT..."
+        git -C "$REPO_ROOT" pull --ff-only || warn "Could not fast-forward $REPO_ROOT; using current checkout."
+    else
+        log "Cloning $repo_url..."
+        git clone "$repo_url" "$REPO_ROOT"
+    fi
 fi
-log "chezmoi ${init_args[*]}"
-chezmoi "${init_args[@]}"
+
+# --- init (generate config from the fresh source, no apply yet) --------------
+log "chezmoi init --source $REPO_ROOT"
+chezmoi init --source "$REPO_ROOT"
 
 SOURCE_DIR="$(chezmoi source-path)"
 
