@@ -22,9 +22,12 @@ sync: ## Sync Homebrew and mise packages
 	$(MAKE) apply
 
 CHEZMOI_EXE := $(shell command -v chezmoi 2>/dev/null || echo ./bin/chezmoi)
+# No age key -> skip encrypted secrets instead of aborting mid-apply
+CHEZMOI_EXCLUDE := $(shell [ -f "$(HOME)/.config/chezmoi/chezmoi_private_key" ] || echo --exclude=encrypted)
 
 apply: ## Apply dotfiles with Chezmoi
-	$(CHEZMOI_EXE) apply --source $(PWD) --force
+	@[ -z "$(CHEZMOI_EXCLUDE)" ] || echo "⚠️  No age key at ~/.config/chezmoi/chezmoi_private_key — skipping encrypted secrets"
+	$(CHEZMOI_EXE) apply --source $(PWD) --force $(CHEZMOI_EXCLUDE)
 
 devops-env: ## Apply dotfiles, then create or update ~/.devops-env with uv
 	$(MAKE) apply
