@@ -3,7 +3,7 @@ name = "devops-env"
 version = "0.1.0"
 description = "Managed Python environment for DevOps workstation utilities"
 readme = "README.md"
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.10,<3.12"
 dependencies = [
     # Automation and infrastructure
     "ansible==5.7.1",
