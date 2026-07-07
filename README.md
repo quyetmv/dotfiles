@@ -6,41 +6,44 @@ Professional environment configuration for **DevOps Engineers** and **Developers
 
 ## Quick Setup
 
-### macOS
+One command, both platforms — installs chezmoi to `~/.local/bin`, installs system packages (Linux), detects a missing age key (skips encrypted secrets with a clear warning instead of aborting), then applies everything:
 
 ```bash
-xcode-select --install
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
-```
+curl -fsLS https://raw.githubusercontent.com/quyetmv/dotfiles/main/scripts/bootstrap.sh | bash
 
-### Linux / WSL
-
-```bash
-sudo apt update && sudo apt install -y curl git make
-
-# Restore the age decryption key first (from Bitwarden or another machine),
-# otherwise apply aborts at ~/.secrets/.private:
-mkdir -p ~/.config/chezmoi
-# → copy the key to ~/.config/chezmoi/chezmoi_private_key (chmod 600)
-# No key yet? Skip encrypted files instead:
-#   chezmoi init --apply --exclude=encrypted quyetmv/dotfiles
-
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
-
-# Then install system packages:
-cd ~/.local/share/chezmoi && make linux
-
-# Then reload shell and set terminal font to MesloLGS NF
+# then reload the shell (set terminal font to MesloLGS NF)
 exec zsh -l
 ```
 
-### Optional flags
+Secrets: to also get `~/.secrets/.private`, restore the age key to `~/.config/chezmoi/chezmoi_private_key` (chmod 600, from Bitwarden or another machine) **before** running bootstrap — or re-run `chezmoi apply` after restoring it.
+
+### Non-interactive / pre-seeded init
+
+Set these to skip prompts (useful for servers and CI):
+
+| Env var | Effect |
+|---------|--------|
+| `CI=1` | Skip ALL prompts (uses defaults / env values below) |
+| `CHEZMOI_GIT_EMAIL` / `CHEZMOI_GIT_NAME` / `CHEZMOI_GITHUB_USER` | Personal git identity |
+| `CHEZMOI_ENABLE_SSH_KEYGEN=1` | Generate SSH key if missing |
+| `CHEZMOI_ENABLE_DOCK=1` | Customize macOS Dock |
+| `CHEZMOI_ENABLE_PERSONAL_APPS=1` | Personal macOS casks (EvKey/Telegram/Sublime Text) |
+| `CHEZMOI_ENABLE_MAS_APPS=1` | Mac App Store apps via mas |
+
+macOS-only questions (Dock, MAS, personal apps) are never asked on Linux.
+
+### Manual fallback
 
 ```bash
-CHEZMOI_ENABLE_SSH_KEYGEN=1   # generate SSH key if missing
-CHEZMOI_ENABLE_DOCK=1         # customize macOS Dock
-CHEZMOI_ENABLE_PERSONAL_APPS=1 # install personal macOS casks like EvKey/Telegram/Sublime Text
-CHEZMOI_ENABLE_MAS_APPS=1      # install Mac App Store apps via mas
+# macOS
+xcode-select --install
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
+
+# Linux / WSL
+sudo apt update && sudo apt install -y curl git make
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
+cd "$(~/.local/bin/chezmoi source-path)" && make linux
+exec zsh -l
 ```
 
 ### Local checkout workflow
