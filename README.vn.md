@@ -23,6 +23,7 @@ Secrets: muốn có luôn `~/.secrets/.private`, restore age key vào `~/.config
 |---------|----------|
 | `CI=1` | Bỏ qua TOÀN BỘ prompt (dùng default / env bên dưới) |
 | `CHEZMOI_GIT_EMAIL` / `CHEZMOI_GIT_NAME` / `CHEZMOI_GITHUB_USER` | Git identity cá nhân |
+| `CHEZMOI_WORK_GIT_DIR` / `CHEZMOI_WORK_GIT_EMAIL` / `CHEZMOI_WORK_GIT_NAME` | Git identity công việc (theo thư mục) |
 | `CHEZMOI_ENABLE_SSH_KEYGEN=1` | Tạo SSH key nếu chưa có |
 | `CHEZMOI_ENABLE_DOCK=1` | Tùy chỉnh Dock macOS |
 | `CHEZMOI_ENABLE_PERSONAL_APPS=1` | Cask cá nhân macOS (EvKey/Telegram/Sublime Text) |
@@ -37,10 +38,12 @@ Các câu hỏi chỉ dành cho macOS (Dock, MAS, personal apps) không bao gi�
 xcode-select --install
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
 
-# Linux / WSL
+# Linux / WSL — phải cài packages TRƯỚC khi apply, nếu không script
+# run_onchange chsh/font bị skip 1 lần (chưa có zsh) và không bao giờ chạy lại
 sudo apt update && sudo apt install -y curl git make
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init quyetmv/dotfiles
 cd "$(~/.local/bin/chezmoi source-path)" && make linux
+~/.local/bin/chezmoi apply
 exec zsh -l
 ```
 

@@ -25,6 +25,7 @@ Set these to skip prompts (useful for servers and CI):
 |---------|--------|
 | `CI=1` | Skip ALL prompts (uses defaults / env values below) |
 | `CHEZMOI_GIT_EMAIL` / `CHEZMOI_GIT_NAME` / `CHEZMOI_GITHUB_USER` | Personal git identity |
+| `CHEZMOI_WORK_GIT_DIR` / `CHEZMOI_WORK_GIT_EMAIL` / `CHEZMOI_WORK_GIT_NAME` | Work git identity (per-directory) |
 | `CHEZMOI_ENABLE_SSH_KEYGEN=1` | Generate SSH key if missing |
 | `CHEZMOI_ENABLE_DOCK=1` | Customize macOS Dock |
 | `CHEZMOI_ENABLE_PERSONAL_APPS=1` | Personal macOS casks (EvKey/Telegram/Sublime Text) |
@@ -39,10 +40,12 @@ macOS-only questions (Dock, MAS, personal apps) are never asked on Linux.
 xcode-select --install
 sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
 
-# Linux / WSL
+# Linux / WSL — packages must be installed BEFORE apply, otherwise the
+# run_onchange chsh/font scripts skip once (no zsh yet) and never re-run
 sudo apt update && sudo apt install -y curl git make
-sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init --apply quyetmv/dotfiles
+sh -c "$(curl -fsLS get.chezmoi.io)" -- -b ~/.local/bin init quyetmv/dotfiles
 cd "$(~/.local/bin/chezmoi source-path)" && make linux
+~/.local/bin/chezmoi apply
 exec zsh -l
 ```
 
