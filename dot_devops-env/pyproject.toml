@@ -20,8 +20,8 @@ dependencies = [
     "rdbtools==0.1.15",
     "sentry-sdk==2.43.0",
     # Data and serialization
-    "requests>=2.25.1",
-    "urllib3<1.26.5",
+    "requests>=2.29",
+    "urllib3<2.0",
     "pytz>=2024.1",
     "pyyaml==6.0.2",
     "jq==1.8.0",
