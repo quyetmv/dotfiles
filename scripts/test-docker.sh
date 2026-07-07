@@ -7,6 +7,7 @@
 #   ./test-docker.sh --github     # GitHub test (interactive)
 #   ./test-docker.sh --full       # Local full setup + validate
 #   ./test-docker.sh --full-gh    # GitHub full setup + validate
+#   ./test-docker.sh --bootstrap  # scripts/bootstrap.sh end-to-end + validate
 # ============================================================================
 
 set -euo pipefail
@@ -36,6 +37,7 @@ run_full() {
 
     echo "🚀 Running full setup and validation ($source_desc)..."
     docker run --rm $tty_flags "$target_image" zsh -c '
+        set -e
         echo "=== Step 1: setup-linux.sh (apt packages) ==="
         cd $HOME/dotfiles
         ./scripts/setup-linux.sh packages
@@ -61,6 +63,34 @@ run_full() {
     '
 }
 
+run_bootstrap() {
+    local target_image=$1
+    local tty_flags="-i"
+    [ -t 0 ] && tty_flags="-it"
+
+    echo "🚀 Running bootstrap.sh end-to-end (LOCAL)..."
+    docker run --rm $tty_flags "$target_image" zsh -c '
+        set -e
+        echo "=== Reset pre-baked chezmoi state (exercise bootstrap from scratch) ==="
+        rm -rf ~/.local/bin/chezmoi ~/.config/chezmoi ~/.local/share/chezmoi
+
+        echo ""
+        echo "=== Step 1: bootstrap.sh ==="
+        bash $HOME/dotfiles/scripts/bootstrap.sh
+
+        echo ""
+        echo "=== Step 2: test-chezmoi.sh ==="
+        CHEZMOI_SOURCE=$HOME/dotfiles bash $HOME/dotfiles/scripts/test-chezmoi.sh
+
+        echo ""
+        echo "=== Step 3: validate-setup.sh ==="
+        bash $HOME/dotfiles/scripts/validate-setup.sh
+
+        echo ""
+        echo "✅ Bootstrap test complete!"
+    '
+}
+
 case "$MODE" in
     --github)
         build_github
@@ -69,6 +99,10 @@ case "$MODE" in
     --full)
         build_local
         run_full "$IMAGE_NAME" "LOCAL"
+        ;;
+    --bootstrap)
+        build_local
+        run_bootstrap "$IMAGE_NAME"
         ;;
     --full-gh)
         build_github
