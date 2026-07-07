@@ -27,6 +27,14 @@ echo "🐍 Syncing DevOps Python environment in $PROJECT_DIR ..."
 )
 touch "$PROJECT_DIR/.auto-activate"
 
+# CLI apps that cap out below python 3.12 live in their own uv-tool venvs
+# (python 3.11) so the main env can track modern python freely.
+echo "🔧 Installing pinned CLI tools (isolated venvs, python 3.11)..."
+uv tool install --python 3.11 --with "ansible==5.7.1" ansible-core \
+    || echo "⚠️  ansible install failed — retry: uv tool install --python 3.11 --with 'ansible==5.7.1' ansible-core"
+uv tool install --python 3.11 rdbtools \
+    || echo "⚠️  rdbtools install failed — retry: uv tool install --python 3.11 rdbtools"
+
 echo "✓ DevOps Python environment is ready"
 echo "  Activate: source \"$PROJECT_DIR/.venv/bin/activate\""
 echo "  Zsh helper: devenv-activate"

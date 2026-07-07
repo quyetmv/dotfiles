@@ -3,10 +3,11 @@ name = "devops-env"
 version = "0.1.0"
 description = "Managed Python environment for DevOps workstation utilities"
 readme = "README.md"
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.12"
 dependencies = [
     # Automation and infrastructure
-    "ansible==5.7.1",
+    # ansible / rdbtools cap out below 3.12 — they live in their own
+    # uv-tool venvs on python 3.11 (see scripts/bootstrap-devops-env.sh)
     "hvac==2.4.0",
     "jira==3.10.5",
     "kubernetes>=34.1.0",
@@ -15,7 +16,6 @@ dependencies = [
     "prometheus-api-client==0.6.0",
     "confluent-kafka==2.12.1",
     "redis==5.0.0",
-    "rdbtools==0.1.15",
     "sentry-sdk==2.43.0",
     # Data and serialization
     "requests>=2.29",
