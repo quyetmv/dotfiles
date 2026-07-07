@@ -17,6 +17,14 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 
 ```bash
 sudo apt update && sudo apt install -y curl git make
+
+# Restore the age decryption key first (from Bitwarden or another machine),
+# otherwise apply aborts at ~/.secrets/.private:
+mkdir -p ~/.config/chezmoi
+# → copy the key to ~/.config/chezmoi/chezmoi_private_key (chmod 600)
+# No key yet? Skip encrypted files instead:
+#   chezmoi init --apply --exclude=encrypted quyetmv/dotfiles
+
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 
 # Then install system packages:

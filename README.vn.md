@@ -17,6 +17,14 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 
 ```bash
 sudo apt update && sudo apt install -y curl git
+
+# Restore age key trước (từ Bitwarden hoặc máy khác),
+# nếu không apply sẽ abort tại ~/.secrets/.private:
+mkdir -p ~/.config/chezmoi
+# → copy key vào ~/.config/chezmoi/chezmoi_private_key (chmod 600)
+# Chưa có key? Bỏ qua file mã hóa:
+#   chezmoi init --apply --exclude=encrypted quyetmv/dotfiles
+
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply quyetmv/dotfiles
 
 # Then install system packages:
