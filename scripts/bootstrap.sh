@@ -85,12 +85,63 @@ if [[ "$OS" == "Linux" && -x "$SOURCE_DIR/scripts/setup-linux.sh" ]]; then
     fi
 fi
 
-# --- age key guard -----------------------------------------------------------
+# --- age key: try Bitwarden restore, else skip encrypted ---------------------
+BW_KEY_ITEM="chezmoi-age-key"
+
+ensure_bw() {
+    command -v bw >/dev/null 2>&1 && return 0
+    if [[ "$OS" == "Linux" ]] && command -v snap >/dev/null 2>&1; then
+        log "Installing bitwarden-cli via snap..."
+        sudo snap install bw && return 0
+    fi
+    if command -v brew >/dev/null 2>&1; then
+        log "Installing bitwarden-cli via brew..."
+        brew install bitwarden-cli && return 0
+    fi
+    if command -v npm >/dev/null 2>&1; then
+        log "Installing bitwarden-cli via npm..."
+        sudo npm install -g @bitwarden/cli && return 0
+    fi
+    return 1
+}
+
+restore_age_key() {
+    # Interactive terminals only — CI/containers keep the skip behavior
+    [[ -n "${CI:-}" ]] && return 1
+    [[ -r /dev/tty && -w /dev/tty ]] || return 1
+
+    printf "Restore age key from Bitwarden (item '%s')? [y/N] " "$BW_KEY_ITEM" > /dev/tty
+    local ans; read -r ans < /dev/tty
+    [[ "$ans" == "y" || "$ans" == "Y" ]] || return 1
+
+    ensure_bw || { warn "Could not install bitwarden-cli."; return 1; }
+
+    export BW_SESSION
+    if bw login --check >/dev/null 2>&1; then
+        BW_SESSION="$(bw unlock --raw < /dev/tty)" || return 1
+    else
+        BW_SESSION="$(bw login --raw < /dev/tty)" || return 1
+    fi
+    bw sync >/dev/null 2>&1 || true
+
+    mkdir -p "$(dirname "$AGE_KEY")"
+    if bw get notes "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && [[ -s "$AGE_KEY" ]]; then
+        chmod 600 "$AGE_KEY"
+        log "Age key restored to $AGE_KEY"
+        return 0
+    fi
+    rm -f "$AGE_KEY"
+    warn "Item '$BW_KEY_ITEM' not found in vault."
+    return 1
+}
+
 apply_args=(apply)
 if [[ ! -f "$AGE_KEY" ]]; then
-    warn "No age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
-    warn "Restore the key (Bitwarden / another machine), chmod 600 it, then run: chezmoi apply"
-    apply_args+=(--exclude=encrypted)
+    if ! restore_age_key; then
+        warn "No age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
+        warn "Restore the key, chmod 600 it, then run: chezmoi apply"
+        apply_args+=(--exclude=encrypted)
+    fi
 fi
 
 # --- apply -------------------------------------------------------------------
