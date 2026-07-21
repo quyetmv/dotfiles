@@ -31,3 +31,11 @@ if [ ! -d "$HOME/.secrets" ]; then
 else
     chmod 700 "$HOME/.secrets"
 fi
+
+# Terraform shared plugin cache (see dot_zsh.d/60-devops.zsh: TF_PLUGIN_CACHE_DIR)
+if [ ! -d "$HOME/.terraform.d/plugin-cache" ]; then
+    mkdir -p "$HOME/.terraform.d/plugin-cache"
+    echo "  ✓ Created ~/.terraform.d/plugin-cache"
+else
+    echo "  ✓ ~/.terraform.d/plugin-cache already exists"
+fi

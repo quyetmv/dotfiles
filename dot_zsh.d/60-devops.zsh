@@ -65,6 +65,15 @@ alias tf="terraform"
 alias tg="terragrunt"
 alias h="helm"
 
+# Terraform/Terragrunt shared plugin & source cache (dir created by run_onchange_after_directories.sh)
+export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+export TG_DOWNLOAD_DIR="$HOME/.terragrunt-cache"
+
+# Remove stray .terragrunt-cache dirs under cwd
+tgclean() {
+  find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} +
+}
+
 # Runtime/tooling management
 alias mk="mise"
 alias mki="mise install"
