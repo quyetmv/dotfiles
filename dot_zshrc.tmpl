@@ -152,13 +152,17 @@ bindkey '^[OF'  end-of-line
 
 # Delete key (forward delete)
 bindkey '^[[3~' delete-char
-{{- if eq .chezmoi.os "linux" }}
-# Keep Ctrl-R usable even when Atuin/fzf key bindings are unavailable.
-if [[ "${DOTFILES_FZF_KEYBINDINGS_LOADED:-0}" -eq 0 ]]; then
+
+# Ctrl-R owner: Atuin > fzf > plain zsh incremental search.
+# fzf's key-bindings.zsh (sourced above) unconditionally rebinds ^R,
+# clobbering the atuin-search binding that `atuin init zsh` set earlier
+# in ~/.zsh.d — reassert Atuin here so it wins as the final binding.
+if command -v atuin >/dev/null 2>&1; then
+  bindkey '^R' atuin-search
+elif [[ "${DOTFILES_FZF_KEYBINDINGS_LOADED:-0}" -eq 0 ]]; then
   bindkey '^R' history-incremental-search-backward
 fi
 unset DOTFILES_FZF_KEYBINDINGS_LOADED
-{{- end }}
 
 ### Path configuration
 # Note: Homebrew bin/sbin are already added by `brew shellenv` — omit them
