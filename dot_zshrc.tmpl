@@ -119,12 +119,20 @@ unset fzf_script
 [[ -f ~/.fzf.zsh ]] && source ~/.fzf.zsh
 
 # Catppuccin Mocha theme for FZF
-export FZF_DEFAULT_OPTS=" \
+FZF_DEFAULT_OPTS=" \
 --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
 --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
---color=selected-bg:#45475a \
 --multi"
+# selected-bg/fg/hl require fzf >= 0.52.0 (May 2024); older distro-packaged fzf rejects them
+if command -v fzf >/dev/null 2>&1; then
+  fzf_version="$(fzf --version | awk '{print $1}')"
+  if [[ "$(printf '%s\n%s\n' "0.52.0" "$fzf_version" | sort -V | head -n1)" == "0.52.0" ]]; then
+    FZF_DEFAULT_OPTS+=" --color=selected-bg:#45475a"
+  fi
+  unset fzf_version
+fi
+export FZF_DEFAULT_OPTS
 
 ### Key bindings
 # Right arrow: accept suggestion if visible, else move forward one char
