@@ -69,6 +69,14 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # Case insensitive com
 command -v gdircolors >/dev/null 2>&1 && alias dircolors="gdircolors"
 [[ -f ~/.dircolors ]] && eval "$(dircolors -b ~/.dircolors)"
 
+### mise (must run before ~/.zsh.d: modules there init mise-managed tools
+### like atuin/zoxide via `command -v`, which needs PATH set up first)
+if [[ -x "$HOME/.local/bin/mise" ]]; then
+  eval "$("$HOME/.local/bin/mise" activate zsh)"
+elif command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+fi
+
 ### Source modular configuration (~/.zsh.d/)
 # Files are loaded in lexical order, so keep numeric prefixes for readability.
 if [[ -d ~/.zsh.d ]]; then
@@ -193,12 +201,6 @@ export INFOPATH="$HOMEBREW_PREFIX/share/info:${INFOPATH:-}"
 
 # Load Powerlevel10k configuration
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-if [[ -x "$HOME/.local/bin/mise" ]]; then
-  eval "$("$HOME/.local/bin/mise" activate zsh)"
-elif command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
-fi
 
 {{- if eq .chezmoi.os "linux" }}
 # macOS-like keymap toggle (Cmd/Ctrl swap, right Alt fix, Caps Lock+hjkl arrows)
