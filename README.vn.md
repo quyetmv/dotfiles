@@ -77,7 +77,7 @@ make install
 ```bash
 chezmoi update           # pull + apply latest changes
 chezmoi diff && chezmoi apply
-make sync                # after editing Brewfile.tmpl or dot_tool-versions
+make sync                # after editing Brewfile.tmpl or dot_config/mise/config.toml
 ```
 
 ## DevOps Toolbox 🧰
@@ -158,8 +158,7 @@ Chúng tôi xây dựng hệ thống tri thức dạng module tại `dot_agents/
 | Manifest | Quản lý |
 |----------|---------|
 | `Brewfile.tmpl` | Homebrew formulas, casks, Mac App Store |
-| `dot_tool-versions` | Version-pinned runtimes and DevOps CLI tools via mise |
-| `dot_config/mise/config.toml` | mise settings only, không khai báo tool versions |
+| `dot_config/mise/config.toml` | mise settings + version-pinned runtimes và DevOps CLI tools (`[tools]`) |
 | `dot_gitconfig.tmpl` + `dot_gitconfig-personal.tmpl` + `dot_gitconfig-work.tmpl` | Git common config + personal/work identities |
 | `dot_p10k.zsh` | Powerlevel10k prompt config lấy cảm hứng từ repo tham chiếu |
 | `dot_zsh.d/*` | Ordered shell modules theo nhóm: env, navigation, git, node, docker, devops, python |

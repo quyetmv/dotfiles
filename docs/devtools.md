@@ -4,62 +4,28 @@ Chi tiết về các tool được quản lý trong dotfiles.
 
 ## Ownership
 
-- `dot_tool-versions`: source of truth cho versions của runtimes và DevOps CLIs
-- `dot_config/mise/config.toml`: chỉ chứa `mise` settings toàn cục
+- `dot_config/mise/config.toml`: source of truth cho `mise` settings + versions của runtimes và DevOps CLIs (`[tools]`)
 - `Brewfile.tmpl`: source of truth cho Homebrew formulas, casks, và `mas`
 - `dot_p10k.zsh`: Powerlevel10k prompt config lấy cảm hứng từ repo tham chiếu
 - `dot_zsh.d/*`: shell modules được load theo thứ tự tên file
 
-## mise (`dot_tool-versions`)
+## mise (`dot_config/mise/config.toml`)
 
 `mise` quản lý tất cả CLI tools có version, cài đặt tự động khi chạy `mise install`.
+Danh sách tool + version đầy đủ nằm trong `[tools]` của `dot_config/mise/config.toml`
+(không duplicate ra đây để tránh lệch phiên bản theo thời gian) — gồm 4 nhóm theo comment
+trong file: core languages (node/python/go/uv), infrastructure & cloud (terraform/kubectl/helm/...),
+Kubernetes tools (k9s/kubectx/kubens/kubecm), và versioned CLI utilities (jq/yq/shellcheck/...).
 
-### Languages & Package Managers
-| Tool | Version | Mô tả |
-|------|---------|-------|
-| node | 22 | Node.js runtime |
-| python | 3.12 | Python runtime |
-| go | 1.24 | Go runtime |
-| uv | latest | Python package manager (thay pip) |
-
-### Infrastructure & Cloud
-| Tool | Version | Mô tả |
-|------|---------|-------|
-| terraform | 1.11 | Infrastructure as Code |
-| terraform-docs | 0.20 | Terraform docs generator |
-| terragrunt | 0.77 | Terraform wrapper |
-| kubectl | 1.32 | Kubernetes CLI |
-| helm | 3.17 | Kubernetes package manager |
-| kustomize | 5.6 | Kubernetes config customization |
-| awscli | 2 | AWS command-line |
-| sops | 3.10 | Secrets encryption |
-| age | 1.2 | File encryption |
-| vault | latest | HashiCorp secrets management |
-
-### Kubernetes Tools
-| Tool | Version | Mô tả |
-|------|---------|-------|
-| k9s | latest | Kubernetes TUI dashboard |
-| kubectx | latest | Switch K8s contexts |
-| kubens | latest | Switch K8s namespaces |
-| kubecm | latest | Kubeconfig manager |
-
-### CLI Utilities
-| Tool | Version | Mô tả |
-|------|---------|-------|
-| jq | 1.7 | JSON processor |
-| yq | 4.45 | YAML processor |
-| shellcheck | 0.10 | Shell script linter |
-| shfmt | 3.11 | Shell script formatter |
-| yamllint | 1.37 | YAML linter |
-| pre-commit | 4.2 | Git hook framework |
-| infracost | latest | Cloud cost estimation |
-| lazydocker | latest | Docker TUI |
+Lưu ý quan trọng: versions phải khai báo ở `~/.config/mise/config.toml` (global config thật
+của mise, áp dụng bất kể cwd), không phải `~/.tool-versions` — file đó chỉ resolve được khi
+cwd nằm trong `$HOME` hoặc thư mục con (mise đi ngược lên cây thư mục từ cwd, không bao giờ
+"thấy" được file nằm ở thư mục con của cwd).
 
 ## Homebrew (`Brewfile.tmpl`)
 
 ### Cross-platform (macOS + Linuxbrew)
-Shell tools: `fd`, `fzf`, `ripgrep`, `tmux`, `mise`, `chezmoi`, `powerlevel10k`, `zoxide`, zsh plugins, `mysql-client`, `redis` (`redis-cli`). (`bat`, `lazygit`, `jq`, `neovim`, `atuin` là mise-owned — xem `dot_tool-versions`.)
+Shell tools: `fd`, `fzf`, `ripgrep`, `tmux`, `mise`, `chezmoi`, `powerlevel10k`, `zoxide`, zsh plugins, `mysql-client`, `redis` (`redis-cli`). (`bat`, `lazygit`, `jq`, `neovim`, `atuin` là mise-owned — xem `[tools]` trong `dot_config/mise/config.toml`.)
 
 ### macOS only (casks)
 | App | Ghi chú |
@@ -141,8 +107,8 @@ Nó được tune để segment `kubecontext`, `terraform`, `aws` chỉ hiện k
 ## Thêm tool mới
 
 ```bash
-# Thêm CLI tool (version-managed)
-echo "argocd latest" >> dot_tool-versions
+# Thêm CLI tool (version-managed): thêm dòng vào [tools] trong dot_config/mise/config.toml
+# argocd = "latest"
 make sync
 
 # Thêm brew package

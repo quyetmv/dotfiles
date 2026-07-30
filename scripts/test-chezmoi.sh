@@ -129,7 +129,6 @@ REQUIRED_FILES=(
     "dot_zsh.d/90-macos.zsh.tmpl"
     "dot_zsh.d/90-linux.zsh.tmpl"
     "dot_tmux.conf"
-    "dot_tool-versions"
     "dot_config/uv/uv.toml"
     "dot_config/mise/config.toml"
     ".chezmoiignore"

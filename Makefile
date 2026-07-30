@@ -52,7 +52,7 @@ restore-help: ## Show instructions on how to restore from backup
 	@echo "To restore a file from Chezmoi backup:"
 	@echo "  chezmoi merge <file-path>"
 	@echo ""
-	@echo "To restore a tool-versions or Brewfile snapshot:"
+	@echo "To restore a mise-config or Brewfile snapshot:"
 	@echo "  cp ~/.dotfiles_backup/<filename> <target-path>"
 
 clean: ## Remove temporary files and cached test Data

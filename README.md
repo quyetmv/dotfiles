@@ -79,7 +79,7 @@ make install
 ```bash
 chezmoi update           # pull + apply latest changes
 chezmoi diff && chezmoi apply
-make sync                # after editing Brewfile.tmpl or dot_tool-versions
+make sync                # after editing Brewfile.tmpl or dot_config/mise/config.toml
 ```
 
 ## DevOps Toolbox 🧰
@@ -163,8 +163,7 @@ We build a modular knowledge system at `dot_agents/skills/` so AI can "read and 
 | Manifest | Managed |
 |----------|---------|
 | `Brewfile.tmpl` | Homebrew formulas, casks, Mac App Store |
-| `dot_tool-versions` | Version-pinned runtimes and DevOps CLI tools via mise |
-| `dot_config/mise/config.toml` | mise settings only, does not declare tool versions |
+| `dot_config/mise/config.toml` | mise settings + version-pinned runtimes and DevOps CLI tools (`[tools]`) |
 | `dot_gitconfig.tmpl` + `dot_gitconfig-personal.tmpl` + `dot_gitconfig-work*.tmpl` | Git common config + personal/work identities |
 | `dot_p10k.zsh` | Powerlevel10k prompt config inspired by the reference repo |
 | `dot_zsh.d/*` | Ordered shell modules by group: env, navigation, git, node, docker, devops, python |

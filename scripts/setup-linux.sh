@@ -196,7 +196,7 @@ install_zsh_extras() {
 
     install_fonts
 
-    log_info "lazygit, lsd, and bat are now managed by mise (see dot_tool-versions)."
+    log_info "lazygit, lsd, and bat are now managed by mise (see dot_config/mise/config.toml)."
     log_warning "Set your terminal font to 'MesloLGS NF' to avoid broken Powerlevel10k glyphs."
     log_success "Zsh extras done."
 }

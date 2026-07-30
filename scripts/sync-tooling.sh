@@ -6,18 +6,18 @@
 #
 # When to run:
 #   - After editing Brewfile.tmpl (macOS: adding/removing brew packages or casks)
-#   - After editing dot_tool-versions (adding/removing mise-managed tools)
+#   - After editing dot_config/mise/config.toml's [tools] (adding/removing mise-managed tools)
 #
 # What it does:
 #   - macOS: runs `brew bundle install` to sync Homebrew packages
-#   - Both:  runs `mise install` to sync CLI tools from dot_tool-versions
+#   - Both:  runs `mise install` to sync CLI tools from dot_config/mise/config.toml
 #   - Both:  installs tmux plugin manager (tpm) if missing
 # ============================================================================
 
 set -euo pipefail
 
 REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-TOOL_VERSIONS="$REPO_ROOT/dot_tool-versions"
+MISE_CONFIG="$REPO_ROOT/dot_config/mise/config.toml"
 BREWFILE_TMPL="$REPO_ROOT/Brewfile.tmpl"
 OS="$(uname -s)"
 TMP_ROOT="$(mktemp -d)"
@@ -44,8 +44,8 @@ mkdir -p "$BACKUP_DIR"
 snapshot_state() {
     echo "📸 Creating pre-sync snapshot in $BACKUP_DIR..."
     # Snapshot mise
-    [[ -f "$HOME/.tool-versions" ]] && cp "$HOME/.tool-versions" "$BACKUP_DIR/tool-versions.$TIMESTAMP"
-    
+    [[ -f "$HOME/.config/mise/config.toml" ]] && cp "$HOME/.config/mise/config.toml" "$BACKUP_DIR/mise-config.$TIMESTAMP.toml"
+
     # Snapshot Homebrew (macOS)
     if [[ "$OS" == "Darwin" ]] && command -v brew >/dev/null 2>&1; then
         brew bundle dump --file="$BACKUP_DIR/Brewfile.$TIMESTAMP" 2>/dev/null || echo "  ⚠ Could not dump Brewfile snapshot"
@@ -69,7 +69,7 @@ snapshot_state() {
     }
 
     cleanup_old_snapshots "Brewfile" "Brewfile.*"
-    cleanup_old_snapshots "tool-versions" "tool-versions.*"
+    cleanup_old_snapshots "mise-config" "mise-config.*"
 }
 
 snapshot_state
@@ -119,20 +119,20 @@ if ! command -v mise >/dev/null 2>&1; then
     fi
 fi
 
-if [[ ! -f "$TOOL_VERSIONS" ]]; then
-    echo "✗ dot_tool-versions not found: $TOOL_VERSIONS"
+if [[ ! -f "$MISE_CONFIG" ]]; then
+    echo "✗ dot_config/mise/config.toml not found: $MISE_CONFIG"
     exit 1
 fi
 
 MISE_TMP="$TMP_ROOT/mise"
 mkdir -p "$MISE_TMP"
-cp "$TOOL_VERSIONS" "$MISE_TMP/.tool-versions"
+cp "$MISE_CONFIG" "$MISE_TMP/mise.toml"
 
 echo "🔧 Syncing mise runtimes..."
 mise install --yes --cd "$MISE_TMP"
 
-if [[ ! -f "$HOME/.tool-versions" ]] || ! cmp -s "$TOOL_VERSIONS" "$HOME/.tool-versions"; then
-    echo "ℹ ~/.tool-versions is not in sync with this repo yet."
+if [[ ! -f "$HOME/.config/mise/config.toml" ]] || ! cmp -s "$MISE_CONFIG" "$HOME/.config/mise/config.toml"; then
+    echo "ℹ ~/.config/mise/config.toml is not in sync with this repo yet."
     echo "  Run: chezmoi apply --source \"$REPO_ROOT\" --force"
 fi
 
