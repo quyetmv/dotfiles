@@ -199,3 +199,12 @@ if [[ -x "$HOME/.local/bin/mise" ]]; then
 elif command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
+
+{{- if eq .chezmoi.os "linux" }}
+# macOS-like keymap toggle (Cmd/Ctrl swap, right Alt fix, Caps Lock+hjkl arrows)
+# See scripts/mac-keymap.sh. Bind a shortcut to it via your DE's keyboard
+# settings (Terminator itself can't run arbitrary commands on a keypress).
+mackeymap() {
+  "$(chezmoi source-path 2>/dev/null || echo "$HOME/.local/share/chezmoi")/scripts/mac-keymap.sh" "$@"
+}
+{{- end }}

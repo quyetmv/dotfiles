@@ -1,0 +1,35 @@
+# Terminator config. Managed by chezmoi from dot_config/terminator/config.tmpl.
+# Toggle at install time: "Map macOS-style keybindings in Terminator?" prompt,
+# or set enable_mac_keybindings in ~/.config/chezmoi/chezmoi.toml and re-apply.
+{{- if index . "enable_mac_keybindings" }}
+
+# macOS-style keybindings (Cmd == Super on a PC keyboard, or the physical
+# Cmd key if using an Apple keyboard / scripts/mac-keymap.sh remap).
+[keybindings]
+  new_tab = <Super>t
+  new_window = <Super>n
+  new_terminator = <Super><Shift>n
+  close_term = <Super>w
+  close_window = <Super><Shift>w
+  copy = <Super>c
+  paste = <Super>v
+  search = <Super>f
+  split_vert = <Super>d
+  split_horiz = <Super><Shift>d
+  full_screen = <Super>Return
+  reset_clear = <Super>k
+  zoom_in = <Super>plus
+  zoom_out = <Super>minus
+  zoom_normal = <Super>0
+  next_tab = <Super><Shift>bracketright
+  prev_tab = <Super><Shift>bracketleft
+  switch_to_tab_1 = <Super>1
+  switch_to_tab_2 = <Super>2
+  switch_to_tab_3 = <Super>3
+  switch_to_tab_4 = <Super>4
+  switch_to_tab_5 = <Super>5
+  switch_to_tab_6 = <Super>6
+  switch_to_tab_7 = <Super>7
+  switch_to_tab_8 = <Super>8
+  switch_to_tab_9 = <Super>9
+{{- end }}
