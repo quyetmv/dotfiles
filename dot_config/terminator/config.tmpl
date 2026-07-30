@@ -1,6 +1,25 @@
 # Terminator config. Managed by chezmoi from dot_config/terminator/config.tmpl.
-# Toggle at install time: "Map macOS-style keybindings in Terminator?" prompt,
-# or set enable_mac_keybindings in ~/.config/chezmoi/chezmoi.toml and re-apply.
+# Toggle macOS-style keybindings at install time: "Map macOS-style
+# keybindings in Terminator?" prompt, or set enable_mac_keybindings in
+# ~/.config/chezmoi/chezmoi.toml and re-apply.
+
+[global_config]
+  suppress_multiple_term_dialog = True
+  putty_paste_style_source_clipboard = True
+[profiles]
+  [[default]]
+    font = Monospace 10
+    scrollback_lines = 50000
+    use_system_font = False
+    copy_on_selection = True
+[layouts]
+  [[default]]
+    [[[window0]]]
+      type = Window
+      parent = ""
+    [[[child1]]]
+      type = Terminal
+      parent = window0
 {{- if index . "enable_mac_keybindings" }}
 
 # macOS-style keybindings (Cmd == Super on a PC keyboard, or the physical
@@ -33,3 +52,4 @@
   switch_to_tab_8 = <Super>8
   switch_to_tab_9 = <Super>9
 {{- end }}
+[plugins]
