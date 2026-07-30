@@ -63,11 +63,11 @@ make install
 
 | Layer | macOS | Linux/WSL |
 |-------|:-----:|:---------:|
-| Homebrew formulas (CLI tools) | ✅ | ✅ (Linuxbrew) |
+| Homebrew formulas (CLI tools) | ✅ | — (không Linuxbrew; xem apt/mise) |
 | Casks (GUI apps) | ✅ | — |
 | Personal macOS casks | Optional | — |
 | Mac App Store apps (`mas`) | Optional | — |
-| mise runtimes (kubectl, terraform...) | ✅ | ✅ |
+| mise runtimes (kubectl, terraform, eza, zoxide, fastfetch, atuin...) | ✅ | ✅ |
 | setup-linux.sh (apt, Docker) | — | ✅ |
 
 📋 Full tool list: [docs/devtools.md](docs/devtools.md)
@@ -193,6 +193,33 @@ touch ~/.extra
 echo 'alias company="cd ~/workspace/company"' >> ~/.extra
 source ~/.extra
 ```
+
+### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (data local từng máy, không nằm trong git)
+
+Render từ template đã track trong git `private_dot_ssh/private_conf.d/bastions.tmpl`, nhưng list bastion thực tế (`ssh_bastions`) **không nằm trong repo** — nó ở local machine state tại `~/.config/chezmoi/chezmoi.toml`, được điền lúc `chezmoi init` (prompt `How many SSH bastion configurations?`).
+
+Muốn thêm/sửa/xoá bastion:
+
+```bash
+nvim ~/.config/chezmoi/chezmoi.toml   # sửa array ssh_bastions trong [data]
+chezmoi apply                         # render lại ~/.ssh/conf.d/bastions
+```
+
+Không cần push gì cả — chỉ logic template được version-control, còn IP/host bastion là per-machine.
+
+## Sửa file do chezmoi quản lý & push ngược lại git
+
+`chezmoi edit <target>` mở file **source**, nằm ngay trong git working tree này (`chezmoi source-path` == root repo). Với target đã mã hoá (vd `~/.secrets/.private`) nó decrypt ra buffer tạm rồi re-encrypt lại vào source tree khi save. Chezmoi không bao giờ tự commit — sửa xong thì commit như bình thường:
+
+```bash
+cd "$(chezmoi source-path)"
+git status
+git add <file>
+git commit -m "..."
+git push
+```
+
+File template không mã hoá (vd `dot_zshrc.tmpl`) cũng có thể sửa trực tiếp trong repo bằng editor bất kỳ — `chezmoi edit` chỉ cần thiết khi muốn xem bản *đã decrypt* của target mã hoá.
 
 Git work identity có thể bật bằng env vars khi apply:
 

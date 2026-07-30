@@ -65,12 +65,12 @@ make install
 
 | Layer | macOS | Linux/WSL |
 |-------|:-----:|:---------:|
-| Homebrew formulas (CLI tools) | ✅ | ✅ (Linuxbrew) |
+| Homebrew formulas (CLI tools) | ✅ | — (no Linuxbrew; see apt/mise rows) |
 | Casks (GUI apps) | ✅ | — |
 | Personal macOS casks | Optional | — |
 | Mac App Store apps (`mas`) | Optional | — |
-| mise runtimes (kubectl, terraform...) | ✅ | ✅ |
-| setup-linux.sh (apt, Docker) | — | ✅ |
+| mise runtimes (kubectl, terraform, eza, zoxide, fastfetch, atuin...) | ✅ | ✅ |
+| setup-linux.sh (apt: fzf, ripgrep, git, Docker...) | — | ✅ |
 
 📋 Full tool list: [docs/devtools.md](docs/devtools.md)
 
@@ -198,6 +198,33 @@ touch ~/.extra
 echo 'alias company="cd ~/workspace/company"' >> ~/.extra
 source ~/.extra
 ```
+
+### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (machine-local data, not in git)
+
+Rendered from the git-tracked template `private_dot_ssh/private_conf.d/bastions.tmpl`, but the actual bastion list (`ssh_bastions`) is **not in the repo** — it lives in local machine state at `~/.config/chezmoi/chezmoi.toml`, filled in interactively during `chezmoi init` (`How many SSH bastion configurations?` prompt).
+
+To add/edit/remove a bastion:
+
+```bash
+nvim ~/.config/chezmoi/chezmoi.toml   # edit the ssh_bastions array under [data]
+chezmoi apply                         # re-renders ~/.ssh/conf.d/bastions
+```
+
+Nothing to push here — only the template logic is version-controlled; the bastion IPs/hosts are per-machine.
+
+## Editing chezmoi-managed files & pushing back to git
+
+`chezmoi edit <target>` opens the **source** file, which lives inside this git working tree (`chezmoi source-path` == repo root). For encrypted targets (e.g. `~/.secrets/.private`) it decrypts to a temp buffer and re-encrypts back into the source tree on save. Chezmoi never auto-commits — after editing, go commit like normal:
+
+```bash
+cd "$(chezmoi source-path)"
+git status
+git add <file>
+git commit -m "..."
+git push
+```
+
+Non-encrypted templated files (e.g. `dot_zshrc.tmpl`) can also just be edited directly in the repo with any editor — `chezmoi edit` is only needed to get the *decrypted* view of an encrypted target.
 
 
 Git work identity can be enabled via env vars when applying:

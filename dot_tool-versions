@@ -29,6 +29,9 @@ lazygit latest
 bat latest
 neovim latest
 atuin latest
+eza latest
+fastfetch latest
+zoxide latest
 
 # Versioned CLI utilities
 
