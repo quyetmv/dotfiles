@@ -1,0 +1,103 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"ReorderModels\\\\|AutoMigrate\\\\|withRelationship\\\\|relationship\" ~/go/pkg/mod/gorm.io/gorm@v1.31.1/migrator/migrator.go | head -30)",
+      "Read(//Users/quyetmv/go/pkg/mod/gorm.io/gorm@v1.31.1/migrator/**)",
+      "Bash(find ~/go/pkg/mod/gorm.io/driver/postgres@v1.6.0 -name \"*.go\" | xargs grep -l \"AutoMigrate\\\\|MigrateColumnUnique\\\\|42704\" 2>/dev/null)",
+      "Read(//Users/quyetmv/go/pkg/mod/gorm.io/driver/postgres@v1.6.0/**)"
+    ]
+  },
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "nmem-hook-session-start",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "nmem-hook-pre-compact",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "nmem-hook-stop",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool != \"TodoRead\" && tool != \"TodoWrite\" && tool != \"TaskList\"",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "nmem-hook-post-tool-use",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "voltagent-infra@voltagent-subagents": true,
+    "claude-code-harness@claude-code-harness-marketplace": true,
+    "superpowers@claude-plugins-official": true,
+    "python-development@claude-code-workflows": true,
+    "understand-anything@understand-anything": true
+  },
+  "extraKnownMarketplaces": {
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
+    },
+    "voltagent-subagents": {
+      "source": {
+        "source": "github",
+        "repo": "VoltAgent/awesome-claude-code-subagents"
+      }
+    },
+    "claude-code-harness-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "Chachamaru127/claude-code-harness"
+      },
+      "autoUpdate": true
+    },
+    "neural-memory": {
+      "source": {
+        "source": "github",
+        "repo": "nhadaututtheky/neural-memory"
+      }
+    },
+    "claude-code-workflows": {
+      "source": {
+        "source": "github",
+        "repo": "wshobson/agents"
+      }
+    }
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true
+}
