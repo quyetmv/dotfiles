@@ -80,6 +80,39 @@ bwsshkey() {
   fi
 }
 
+# SSH bastions (chezmoi-managed, age-encrypted at
+# private_dot_ssh/private_conf.d/encrypted_bastions.age -> ~/.ssh/conf.d/bastions)
+bastion-list() {
+  grep -E '^Host ' "$HOME/.ssh/conf.d/bastions" 2>/dev/null
+}
+
+bastion-add() {
+  local name="${1:?Usage: bastion-add <name> <range> <bastion-host>}"
+  local range="${2:?Usage: bastion-add <name> <range> <bastion-host>}"
+  local bastion="${3:?Usage: bastion-add <name> <range> <bastion-host>}"
+  local dest="$HOME/.ssh/conf.d/bastions"
+
+  {
+    echo ""
+    echo "Host $range"
+    echo "    ProxyJump $bastion"
+    echo "    StrictHostKeyChecking no"
+    echo "    UserKnownHostsFile /dev/null"
+    if [[ "$range" != *'*'* ]]; then
+      echo ""
+      echo "Host jump-$name"
+      echo "    HostName $range"
+      echo "    ProxyJump $bastion"
+      echo "    StrictHostKeyChecking no"
+      echo "    UserKnownHostsFile /dev/null"
+    fi
+  } >> "$dest"
+
+  chezmoi re-add "$dest"
+  echo "bastion: $name added, re-encrypted into source. Next:"
+  echo "  cd \$(chezmoi source-path) && git add private_dot_ssh/private_conf.d/encrypted_bastions.age && git commit && git push"
+}
+
 # Kubernetes
 alias k="kubectl"
 alias kgp="kubectl get pods"

@@ -170,6 +170,7 @@ We build a modular knowledge system at `dot_agents/skills/` so AI can "read and 
 | `dot_zsh.d/*` | Ordered shell modules by group: env, navigation, git, node, docker, devops, python |
 | `pyproject.toml` + `uv.lock` | Python deps (per project) |
 | `private_dot_secrets/encrypted_private_dot_private.age` | Age-encrypted machine secrets, decrypts to `~/.secrets/.private` |
+| `private_dot_ssh/private_conf.d/encrypted_bastions.age` | Age-encrypted SSH bastion ProxyJump config, decrypts to `~/.ssh/conf.d/bastions` |
 
 ## Machine-specific config
 
@@ -199,18 +200,21 @@ echo 'alias company="cd ~/workspace/company"' >> ~/.extra
 source ~/.extra
 ```
 
-### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (machine-local data, not in git)
+### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (age-encrypted, git-tracked)
 
-Rendered from the git-tracked template `private_dot_ssh/private_conf.d/bastions.tmpl`, but the actual bastion list (`ssh_bastions`) is **not in the repo** — it lives in local machine state at `~/.config/chezmoi/chezmoi.toml`, filled in interactively during `chezmoi init` (`How many SSH bastion configurations?` prompt).
-
-To add/edit/remove a bastion:
+Same mechanism as `~/.secrets/.private`: stored encrypted at `private_dot_ssh/private_conf.d/encrypted_bastions.age`, decrypts to `~/.ssh/conf.d/bastions`. Chosen over the old machine-local `[data]` prompt approach so entries get git history and sync across machines via the shared age key.
 
 ```bash
-nvim ~/.config/chezmoi/chezmoi.toml   # edit the ssh_bastions array under [data]
-chezmoi apply                         # re-renders ~/.ssh/conf.d/bastions
+bastion-add <name> <range> <bastion-host>   # appends a Host block, then `chezmoi re-add`
+bastion-list                                # grep Host lines in the applied file
+chezmoi edit ~/.ssh/conf.d/bastions          # or edit freeform in $EDITOR
+
+cd "$(chezmoi source-path)"
+git add private_dot_ssh/private_conf.d/encrypted_bastions.age
+git commit -m "..." && git push
 ```
 
-Nothing to push here — only the template logic is version-controlled; the bastion IPs/hosts are per-machine.
+`bastion-add`/`bastion-list` live in `dot_zsh.d/60-devops.zsh`. Skip the `jump-<name>` alias block automatically when `range` contains `*` (wildcard ranges can't be a `HostName`).
 
 ## Editing chezmoi-managed files & pushing back to git
 

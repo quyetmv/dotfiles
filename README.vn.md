@@ -165,6 +165,7 @@ Chúng tôi xây dựng hệ thống tri thức dạng module tại `dot_agents/
 | `dot_zsh.d/*` | Ordered shell modules theo nhóm: env, navigation, git, node, docker, devops, python |
 | `pyproject.toml` + `uv.lock` | Python deps (per project) |
 | `private_dot_secrets/encrypted_private_dot_private.age` | Secrets mã hoá bằng age, decrypt ra `~/.secrets/.private` |
+| `private_dot_ssh/private_conf.d/encrypted_bastions.age` | SSH bastion ProxyJump config mã hoá bằng age, decrypt ra `~/.ssh/conf.d/bastions` |
 
 ## Cấu hình đặc thù cho từng máy (Machine-specific config)
 
@@ -194,18 +195,21 @@ echo 'alias company="cd ~/workspace/company"' >> ~/.extra
 source ~/.extra
 ```
 
-### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (data local từng máy, không nằm trong git)
+### `~/.ssh/conf.d/bastions` — SSH ProxyJump config (age-encrypted, git-tracked)
 
-Render từ template đã track trong git `private_dot_ssh/private_conf.d/bastions.tmpl`, nhưng list bastion thực tế (`ssh_bastions`) **không nằm trong repo** — nó ở local machine state tại `~/.config/chezmoi/chezmoi.toml`, được điền lúc `chezmoi init` (prompt `How many SSH bastion configurations?`).
-
-Muốn thêm/sửa/xoá bastion:
+Cùng cơ chế với `~/.secrets/.private`: lưu mã hoá tại `private_dot_ssh/private_conf.d/encrypted_bastions.age`, decrypt ra `~/.ssh/conf.d/bastions`. Chọn cách này thay vì `[data]` prompt cũ để có git history và sync giữa các máy qua age key chung.
 
 ```bash
-nvim ~/.config/chezmoi/chezmoi.toml   # sửa array ssh_bastions trong [data]
-chezmoi apply                         # render lại ~/.ssh/conf.d/bastions
+bastion-add <name> <range> <bastion-host>   # append 1 Host block, rồi `chezmoi re-add`
+bastion-list                                # grep Host trong file đã apply
+chezmoi edit ~/.ssh/conf.d/bastions          # hoặc sửa tự do trong $EDITOR
+
+cd "$(chezmoi source-path)"
+git add private_dot_ssh/private_conf.d/encrypted_bastions.age
+git commit -m "..." && git push
 ```
 
-Không cần push gì cả — chỉ logic template được version-control, còn IP/host bastion là per-machine.
+`bastion-add`/`bastion-list` nằm trong `dot_zsh.d/60-devops.zsh`. Tự động bỏ qua block `jump-<name>` khi `range` chứa `*` (wildcard range không thể làm `HostName`).
 
 ## Sửa file do chezmoi quản lý & push ngược lại git
 

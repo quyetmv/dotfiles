@@ -39,17 +39,6 @@
 {{-   $enableWork = promptBool "Do you want to configure Work Git accounts? (y/n)" -}}
 {{- end -}}
 
-{{- $sshBastions := list -}}
-{{- if $interactive -}}
-{{-   $bastionCount := promptInt "How many SSH bastion configurations? (0 to skip)" -}}
-{{-   range until (int $bastionCount) -}}
-{{-     $bName := promptString "Bastion name (e.g. prod, staging)" -}}
-{{-     $bRange := promptString (printf "IP range for '%s' (e.g. 10.110.15.*)" $bName) -}}
-{{-     $bHost := promptString (printf "Bastion host IP for '%s'" $bName) -}}
-{{-     $sshBastions = append $sshBastions (dict "name" $bName "range" $bRange "bastion" $bHost) -}}
-{{-   end -}}
-{{- end -}}
-
 {{- if $enableWork -}}
 {{-   if $interactive -}}
 {{-     $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
@@ -100,11 +89,6 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     enable_mas_apps = {{ $enableMasApps }}
     enable_personal_apps = {{ $enablePersonalApps }}
     enable_ssh_keygen = {{ $enableSshKeygen }}
-    ssh_bastions = [
-        {{- range $sshBastions }}
-        { name = {{ printf "%q" .name }}, range = {{ printf "%q" .range }}, bastion = {{ printf "%q" .bastion }} },
-        {{- end }}
-    ]
 
 [apply]
     backup = true
