@@ -164,30 +164,35 @@ Chúng tôi xây dựng hệ thống tri thức dạng module tại `dot_agents/
 | `dot_p10k.zsh` | Powerlevel10k prompt config lấy cảm hứng từ repo tham chiếu |
 | `dot_zsh.d/*` | Ordered shell modules theo nhóm: env, navigation, git, node, docker, devops, python |
 | `pyproject.toml` + `uv.lock` | Python deps (per project) |
+| `private_dot_secrets/encrypted_private_dot_private.age` | Secrets mã hoá bằng age, decrypt ra `~/.secrets/.private` |
 
 ## Cấu hình đặc thù cho từng máy (Machine-specific config)
 
-Trong quá trình làm việc, bạn sẽ có những biến môi trường nhạy cảm (API Keys, Tokens) hoặc các thiết lập dùng riêng cho máy hiện tại mà không muốn lưu lên GitHub.
+`.zshrc` source theo thứ tự: `~/.secrets/.private`, rồi `~/.extra`, rồi `~/.functions`. Chọn đúng loại:
 
-Dotfiles này đã cấu hình **bỏ qua (ignore)** file `~/.private` khỏi Git. Bạn có thể sử dụng file này để lưu trữ an toàn các bí mật cá nhân cá nhân và công việc.
+### `~/.secrets/.private` — secrets đã mã hoá (chezmoi + age)
 
-**Cách sử dụng:**
+Dùng cho thứ nhạy cảm (API key, token) nhưng vẫn muốn sync qua git giữa các máy của bạn. Được chezmoi quản lý, lưu **mã hoá bằng age** trong repo tại `private_dot_secrets/encrypted_private_dot_private.age`, apply ra `~/.secrets/.private` với mode `600`.
 
-1. Tạo file trên máy của bạn (chỉ làm 1 lần):
-   ```bash
-   touch ~/.private
-   ```
-2. Thêm nội dung của bạn vào file (dùng nano, vim, hoặc VSCode):
-   ```bash
-   # Ví dụ trong ~/.private
-   export WORK_API_KEY="secret123"
-   export AWS_PROFILE="production"
-   alias company="cd ~/workspace/company"
-   ```
-3. Zsh sẽ tự động nạp (`source`) file này mỗi khi bạn mở Terminal. Để áp dụng ngay lập tức, chạy:
-   ```bash
-   source ~/.private
-   ```
+```bash
+chezmoi edit ~/.secrets/.private   # decrypt, mở $EDITOR (nvim), re-encrypt khi save
+chezmoi apply                      # ghi plaintext ra ~/.secrets/.private
+source ~/.secrets/.private          # hoặc: exec zsh -l
+```
+
+Cần age identity key tại `~/.config/chezmoi/chezmoi_private_key` (public recipient đã khai trong `.chezmoi.toml.tmpl`). **Backup key này** (vd Bitwarden) — mất key thì file mã hoá không khôi phục được. Bootstrap sẽ bỏ qua secrets kèm cảnh báo nếu thiếu key; restore key rồi chạy lại `chezmoi apply`.
+
+File mã hoá an toàn để commit/push (`git add private_dot_secrets/encrypted_private_dot_private.age`) — đó là cách nó sync sang máy khác.
+
+### `~/.extra` / `~/.functions` — chỉ local, không track bởi git hay chezmoi
+
+Dùng cho thứ hoàn toàn local, không cần sync hay mã hoá (`.chezmoiignore`'d). Tạo và sửa trực tiếp:
+
+```bash
+touch ~/.extra
+echo 'alias company="cd ~/workspace/company"' >> ~/.extra
+source ~/.extra
+```
 
 Git work identity có thể bật bằng env vars khi apply:
 
@@ -285,7 +290,7 @@ Thư mục `dotfiles/` trong root chỉ nên dùng làm repo tham chiếu tạm 
 - `30-git.zsh`: git aliases
 - `40-node.zsh`: node/npm shortcuts
 - `50-docker.zsh`: docker / docker compose
-- `60-devops.zsh`: kubectl / terraform / helm / mise
+- `60-devops.zsh`: kubectl / terraform / helm / mise / calico (calicoctl, vendored tại `bin/calicoctl`)
 - `70-python.zsh`: `uv` workflow
 - `80-modern-tools.zsh`: Starship, Atuin, Zoxide, Eza initialization
 - `90-macos.zsh` / `90-linux.zsh`: OS-specific additions

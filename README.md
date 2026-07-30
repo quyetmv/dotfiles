@@ -169,30 +169,35 @@ We build a modular knowledge system at `dot_agents/skills/` so AI can "read and 
 | `dot_p10k.zsh` | Powerlevel10k prompt config inspired by the reference repo |
 | `dot_zsh.d/*` | Ordered shell modules by group: env, navigation, git, node, docker, devops, python |
 | `pyproject.toml` + `uv.lock` | Python deps (per project) |
+| `private_dot_secrets/encrypted_private_dot_private.age` | Age-encrypted machine secrets, decrypts to `~/.secrets/.private` |
 
 ## Machine-specific config
 
-During your daily work, you may have sensitive environment variables (API Keys, Tokens) or specific configurations that you only want to use on your current machine without committing them to GitHub.
+`.zshrc` sources, in order: `~/.secrets/.private`, then `~/.extra`, then `~/.functions`. Pick the right one:
 
-This dotfiles repository is configured to **ignore** the `~/.private` file from Git. You can use this file to securely store your personal and work secrets.
+### `~/.secrets/.private` — encrypted secrets (chezmoi + age)
 
-**How to use:**
+For anything sensitive (API keys, tokens) that should still sync across your own machines via git. Managed by chezmoi, stored **age-encrypted** in the repo at `private_dot_secrets/encrypted_private_dot_private.age`, applied to `~/.secrets/.private` with mode `600`.
 
-1. Create the file on your machine (only once):
-   ```bash
-   touch ~/.private
-   ```
-2. Add your content to the file (using nano, vim, or VSCode):
-   ```bash
-   # Example in ~/.private
-   export WORK_API_KEY="secret123"
-   export AWS_PROFILE="production"
-   alias company="cd ~/workspace/company"
-   ```
-3. Zsh will automatically load (`source`) this file whenever you open a Terminal. To apply it immediately, run:
-   ```bash
-   source ~/.private
-   ```
+```bash
+chezmoi edit ~/.secrets/.private   # decrypts, opens $EDITOR (nvim), re-encrypts on save
+chezmoi apply                      # writes decrypted plaintext to ~/.secrets/.private
+source ~/.secrets/.private          # or: exec zsh -l
+```
+
+Requires the age identity key at `~/.config/chezmoi/chezmoi_private_key` (its public recipient is baked into `.chezmoi.toml.tmpl`). **Back this key up** (e.g. Bitwarden) — without it the encrypted blob is unrecoverable. Bootstrap skips secrets with a warning if the key is missing; restore it and re-run `chezmoi apply`.
+
+The encrypted blob is safe to commit/push (`git add private_dot_secrets/encrypted_private_dot_private.age`) — that's how it syncs to other machines holding the same age key.
+
+### `~/.extra` / `~/.functions` — local-only, not tracked by git or chezmoi
+
+For anything machine-local that never needs to sync or be encrypted (`.chezmoiignore`'d). Just create and edit directly:
+
+```bash
+touch ~/.extra
+echo 'alias company="cd ~/workspace/company"' >> ~/.extra
+source ~/.extra
+```
 
 
 Git work identity can be enabled via env vars when applying:
@@ -293,7 +298,7 @@ The `dotfiles/` directory in the root should only be used as a temporary referen
 - `30-git.zsh`: git aliases
 - `40-node.zsh`: node/npm shortcuts
 - `50-docker.zsh`: docker / docker compose
-- `60-devops.zsh`: kubectl / terraform / helm / mise
+- `60-devops.zsh`: kubectl / terraform / helm / mise / calico (calicoctl, vendored at `bin/calicoctl`)
 - `70-python.zsh`: `uv` workflow
 - `80-modern-tools.zsh`: Starship, Atuin, Zoxide, Eza initialization
 - `90-macos.zsh` / `90-linux.zsh`: OS-specific additions
