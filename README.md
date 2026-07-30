@@ -374,6 +374,22 @@ bwu               # re-run to refresh bw serve
 bwuse <cluster>   # exports PROXMOX_* and GITLAB_TOKEN together
 ```
 
+### SSH key pair
+
+Secure note, name `ssh-<key-name>` (default key name is `id_quyetmv`), key material in custom fields `private_key` / `public_key`. `bwsshkey` writes them to `~/.ssh/keys/<key-name>` (mode `600`) and `~/.ssh/keys/<key-name>.pub` (mode `644`):
+
+```bash
+bw get template item \
+  | jq --rawfile priv ~/.ssh/keys/id_quyetmv --rawfile pub ~/.ssh/keys/id_quyetmv.pub \
+      '.type=2 | .secureNote.type=0 | .name="ssh-id_quyetmv"
+       | .fields=[{name:"private_key",value:$priv,type:0},{name:"public_key",value:$pub,type:0}]' \
+  | bw encode | bw create item
+
+bwu                 # re-run to refresh bw serve
+bwsshkey            # pulls "ssh-id_quyetmv" -> ~/.ssh/keys/id_quyetmv(.pub)
+bwsshkey other_key  # or any other "ssh-<name>" item -> ~/.ssh/keys/<name>(.pub)
+```
+
 ## Commands
 
 | Command | Purpose |

@@ -366,6 +366,22 @@ bwu               # chạy lại để refresh bw serve
 bwuse <cluster>   # export PROXMOX_* và GITLAB_TOKEN cùng lúc
 ```
 
+### SSH key pair
+
+Secure note, tên `ssh-<key-name>` (mặc định key name là `id_quyetmv`), key nằm trong custom field `private_key` / `public_key`. `bwsshkey` ghi ra `~/.ssh/keys/<key-name>` (mode `600`) và `~/.ssh/keys/<key-name>.pub` (mode `644`):
+
+```bash
+bw get template item \
+  | jq --rawfile priv ~/.ssh/keys/id_quyetmv --rawfile pub ~/.ssh/keys/id_quyetmv.pub \
+      '.type=2 | .secureNote.type=0 | .name="ssh-id_quyetmv"
+       | .fields=[{name:"private_key",value:$priv,type:0},{name:"public_key",value:$pub,type:0}]' \
+  | bw encode | bw create item
+
+bwu                 # chạy lại để refresh bw serve
+bwsshkey            # kéo "ssh-id_quyetmv" -> ~/.ssh/keys/id_quyetmv(.pub)
+bwsshkey other_key  # hoặc item "ssh-<name>" bất kỳ -> ~/.ssh/keys/<name>(.pub)
+```
+
 ## Commands
 
 | Command | Purpose |

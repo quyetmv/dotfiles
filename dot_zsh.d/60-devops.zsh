@@ -52,6 +52,34 @@ bwuse() {
   fi
 }
 
+# SSH key pair from Bitwarden secure note (name="ssh-<key-name>",
+# custom fields "private_key" / "public_key")
+bwsshkey() {
+  local key_name="${1:-id_quyetmv}"
+  local dest="$HOME/.ssh/keys/$key_name"
+
+  local item
+  item="$(_bw_api "list/object/items?search=ssh-$key_name" \
+    | jq -r --arg n "ssh-$key_name" '.data.data[] | select(.name == $n)')"
+  [[ -n "$item" && "$item" != "null" ]] || { echo "bwsshkey: 'ssh-$key_name' not found (run bwu?)"; return 1; }
+
+  local priv pub
+  priv="$(printf '%s' "$item" | jq -r '.fields[]? | select(.name=="private_key") | .value')"
+  pub="$(printf '%s' "$item" | jq -r '.fields[]? | select(.name=="public_key") | .value')"
+  [[ -n "$priv" && "$priv" != "null" ]] || { echo "bwsshkey: 'private_key' field missing on ssh-$key_name"; return 1; }
+
+  mkdir -p "$(dirname "$dest")"
+  printf '%s\n' "$priv" > "$dest"
+  chmod 600 "$dest"
+  echo "ssh key: ssh-$key_name → $dest"
+
+  if [[ -n "$pub" && "$pub" != "null" ]]; then
+    printf '%s\n' "$pub" > "$dest.pub"
+    chmod 644 "$dest.pub"
+    echo "ssh pubkey: ssh-$key_name → $dest.pub"
+  fi
+}
+
 # Kubernetes
 alias k="kubectl"
 alias kgp="kubectl get pods"
