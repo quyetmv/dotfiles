@@ -17,7 +17,7 @@
 {{- if hasKey . "work_configs" }}
 {{- range $i, $config := .work_configs }}
 {{- if $config.dir }}
-[includeIf "gitdir:{{ $config.dir }}"]
+[includeIf "gitdir:{{ trimSuffix "/" $config.dir }}/"]
   path = ~/.gitconfig-work-{{ (add $i 1) }}
 {{- end }}
 {{- end }}
