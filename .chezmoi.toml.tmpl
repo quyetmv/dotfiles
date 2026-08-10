@@ -51,18 +51,22 @@
 {{-       range $i := until $workCountInt -}}
 {{-         $idx := add $i 1 -}}
 {{-         $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
+{{-         $label := promptString (printf "Short label for Work %d (e.g. ghtk -> ~/.gitconfig-ghtk)" $idx) -}}
 {{-         $email := promptString (printf "Git email address for Work %d" $idx) -}}
 {{-         $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
-{{-         $workConfigs = append $workConfigs (dict "dir" $dir "email" $email "name" $name) -}}
+{{-         $label = $label | lower | replace " " "-" -}}
+{{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $email "name" $name) -}}
 {{-       end -}}
 {{-     end -}}
 {{-   else -}}
 {{/* Fallback to env vars for CI/non-interactive mode */}}
 {{-     $workGitDir := env "CHEZMOI_WORK_GIT_DIR" -}}
 {{-     if $workGitDir -}}
+{{-       $workLabel := env "CHEZMOI_WORK_GIT_LABEL" -}}
 {{-       $workEmail := env "CHEZMOI_WORK_GIT_EMAIL" -}}
 {{-       $workName := env "CHEZMOI_WORK_GIT_NAME" -}}
-{{-       $workConfigs = append $workConfigs (dict "dir" $workGitDir "email" $workEmail "name" $workName) -}}
+{{-       $workLabel = $workLabel | default "work-1" | lower | replace " " "-" -}}
+{{-       $workConfigs = append $workConfigs (dict "dir" $workGitDir "label" $workLabel "email" $workEmail "name" $workName) -}}
 {{-     end -}}
 {{-   end -}}
 {{- end -}}
@@ -86,7 +90,7 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     # Work Configurations
     work_configs = [
         {{- range $i, $config := $workConfigs }}
-        { dir = {{ printf "%q" $config.dir }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }} },
+        { dir = {{ printf "%q" $config.dir }}, label = {{ printf "%q" $config.label }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }} },
         {{- end }}
     ]
     enable_dock = {{ $enableDock }}
