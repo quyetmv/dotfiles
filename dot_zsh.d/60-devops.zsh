@@ -22,10 +22,10 @@ _bw_api_post() { curl -sf -X POST "http://localhost:${_BW_PORT}/$1"; }
 # requiring a manual bwu/master-password every time the vault changes.
 _BW_SYNC_TTL=300
 _bw_ensure() {
-  local status
-  status="$(_bw_api status 2>/dev/null | jq -r '.data.template.status // empty')"
-  [[ -z "$status" ]] && { echo "bw serve: not running — run bwu"; return 1; }
-  [[ "$status" != "unlocked" ]] && { echo "bw serve: locked — run bwu"; return 1; }
+  local bw_status
+  bw_status="$(_bw_api status 2>/dev/null | jq -r '.data.template.status // empty')"
+  [[ -z "$bw_status" ]] && { echo "bw serve: not running — run bwu"; return 1; }
+  [[ "$bw_status" != "unlocked" ]] && { echo "bw serve: locked — run bwu"; return 1; }
 
   local stamp="/tmp/.bw_serve_synced_$UID" now last=0
   now=$(date +%s)
