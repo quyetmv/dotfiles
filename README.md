@@ -347,6 +347,17 @@ bw login    # one-time device login
 bwu         # unlock vault + start local REST server on localhost:8087
 ```
 
+### Commands
+
+| Command | Purpose |
+|---|---|
+| `bwu` | Unlock vault, `bw sync`, (re)start `bw serve` on `localhost:8087`. Needed when the daemon is down or locked. |
+| `pxlist` | List all `proxmox-*` clusters. |
+| `bwuse <cluster>` | Export `PROXMOX_VE_URL` / `PROXMOX_VE_API_TOKEN` / `PROXMOX_CLUSTER`, and `GITLAB_TOKEN` if present. |
+| `bwsshkey [key-name]` | Pull `ssh-<key-name>` (default `id_quyetmv`) to `~/.ssh/keys/<key-name>(.pub)`. |
+
+`pxlist`/`bwuse`/`bwsshkey` all call `_bw_ensure` first: if `bw serve` is unlocked, it triggers a throttled (5 min) `POST /sync` on the running daemon so vault edits show up without re-running `bwu`. It only tells you to run `bwu` if the daemon is actually down or locked.
+
 ### Add a vault item
 
 ```bash
@@ -354,14 +365,7 @@ bw get template item \
   | jq '.type=1 | .name="proxmox-<cluster>" | .notes="" | .login.username="<api-url>" | .login.password="<api-token>"' \
   | bw encode | bw create item
 
-bwu   # bw serve caches vault state at startup, so re-run to pick up the new item
-```
-
-### List & use
-
-```bash
-pxlist            # list all proxmox-* clusters
-bwuse <cluster>   # export PROXMOX_VE_URL / PROXMOX_VE_API_TOKEN / PROXMOX_CLUSTER, and GITLAB_TOKEN if present
+pxlist   # auto-syncs bw serve and picks up the new item
 ```
 
 ### GitLab token
@@ -373,7 +377,6 @@ bw get template item \
   | jq '.type=1 | .name="gitlab-token" | .notes="" | .login.password="<personal-access-token>"' \
   | bw encode | bw create item
 
-bwu               # re-run to refresh bw serve
 bwuse <cluster>   # exports PROXMOX_* and GITLAB_TOKEN together
 ```
 
@@ -388,7 +391,6 @@ bw get template item \
        | .fields=[{name:"private_key",value:$priv,type:0},{name:"public_key",value:$pub,type:0}]' \
   | bw encode | bw create item
 
-bwu                 # re-run to refresh bw serve
 bwsshkey            # pulls "ssh-id_quyetmv" -> ~/.ssh/keys/id_quyetmv(.pub)
 bwsshkey other_key  # or any other "ssh-<name>" item -> ~/.ssh/keys/<name>(.pub)
 ```

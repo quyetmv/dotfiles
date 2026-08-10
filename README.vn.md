@@ -339,6 +339,17 @@ bw login    # login device 1 lần
 bwu         # unlock vault + start REST server local trên localhost:8087
 ```
 
+### Commands
+
+| Command | Chức năng |
+|---|---|
+| `bwu` | Unlock vault, `bw sync`, (re)start `bw serve` trên `localhost:8087`. Cần khi daemon down hoặc locked. |
+| `pxlist` | List các cluster `proxmox-*`. |
+| `bwuse <cluster>` | Export `PROXMOX_VE_URL` / `PROXMOX_VE_API_TOKEN` / `PROXMOX_CLUSTER`, kèm `GITLAB_TOKEN` nếu có. |
+| `bwsshkey [key-name]` | Kéo `ssh-<key-name>` (mặc định `id_quyetmv`) về `~/.ssh/keys/<key-name>(.pub)`. |
+
+`pxlist`/`bwuse`/`bwsshkey` đều gọi `_bw_ensure` trước: nếu `bw serve` đang unlocked, nó trigger `POST /sync` (throttle 5 phút) lên daemon đang chạy để vault edit lên ngay mà không cần chạy lại `bwu`. Chỉ báo chạy `bwu` khi daemon thực sự down hoặc locked.
+
 ### Thêm vault item
 
 ```bash
@@ -346,7 +357,7 @@ bw get template item \
   | jq '.type=1 | .name="proxmox-<cluster>" | .notes="" | .login.username="<api-url>" | .login.password="<api-token>"' \
   | bw encode | bw create item
 
-bwu   # bw serve cache vault lúc start, chạy lại để nhận item mới
+pxlist   # tự sync bw serve, nhận item mới ngay
 ```
 
 ### List & use
@@ -365,7 +376,6 @@ bw get template item \
   | jq '.type=1 | .name="gitlab-token" | .notes="" | .login.password="<personal-access-token>"' \
   | bw encode | bw create item
 
-bwu               # chạy lại để refresh bw serve
 bwuse <cluster>   # export PROXMOX_* và GITLAB_TOKEN cùng lúc
 ```
 
@@ -380,7 +390,6 @@ bw get template item \
        | .fields=[{name:"private_key",value:$priv,type:0},{name:"public_key",value:$pub,type:0}]' \
   | bw encode | bw create item
 
-bwu                 # chạy lại để refresh bw serve
 bwsshkey            # kéo "ssh-id_quyetmv" -> ~/.ssh/keys/id_quyetmv(.pub)
 bwsshkey other_key  # hoặc item "ssh-<name>" bất kỳ -> ~/.ssh/keys/<name>(.pub)
 ```

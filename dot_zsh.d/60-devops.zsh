@@ -16,8 +16,27 @@ bwu() {
 }
 
 _bw_api() { curl -sf "http://localhost:${_BW_PORT}/$1"; }
+_bw_api_post() { curl -sf -X POST "http://localhost:${_BW_PORT}/$1"; }
+
+# Self-heals staleness: syncs the running bw serve daemon (throttled) instead of
+# requiring a manual bwu/master-password every time the vault changes.
+_BW_SYNC_TTL=300
+_bw_ensure() {
+  local status
+  status="$(_bw_api status 2>/dev/null | jq -r '.data.template.status // empty')"
+  [[ -z "$status" ]] && { echo "bw serve: not running — run bwu"; return 1; }
+  [[ "$status" != "unlocked" ]] && { echo "bw serve: locked — run bwu"; return 1; }
+
+  local stamp="/tmp/.bw_serve_synced_$UID" now last=0
+  now=$(date +%s)
+  [[ -f "$stamp" ]] && last=$(<"$stamp")
+  (( now - last < _BW_SYNC_TTL )) && return 0
+
+  _bw_api_post sync >/dev/null && echo "$now" > "$stamp"
+}
 
 pxlist() {
+  _bw_ensure || return 1
   _bw_api "list/object/items?search=proxmox" \
     | jq -r '.data.data[].name | select(startswith("proxmox-"))' \
     | sed 's/^proxmox-//'
@@ -27,6 +46,7 @@ pxlist() {
 #                       -> gitlab-token (if present): GITLAB_TOKEN
 bwuse() {
   local cluster="${1:?Usage: bwuse <cluster-name>}"
+  _bw_ensure || return 1
 
   local item url token
   item="$(_bw_api "list/object/items?search=proxmox-$cluster" \
@@ -57,6 +77,7 @@ bwuse() {
 bwsshkey() {
   local key_name="${1:-id_quyetmv}"
   local dest="$HOME/.ssh/keys/$key_name"
+  _bw_ensure || return 1
 
   local item
   item="$(_bw_api "list/object/items?search=ssh-$key_name" \
