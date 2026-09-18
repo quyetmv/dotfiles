@@ -15,6 +15,11 @@ else
     unset LC_ALL
 fi
 
+# GPG TTY for commit signing
+if command -v gpg >/dev/null 2>&1; then
+    export GPG_TTY=$(tty)
+fi
+
 # Network helper variables
 {{- if eq .chezmoi.os "darwin" }}
 alias iplocal="ipconfig getifaddr en0"

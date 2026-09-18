@@ -19,6 +19,7 @@
 {{- $email := env "CHEZMOI_GIT_EMAIL" -}}
 {{- $name := env "CHEZMOI_GIT_NAME" -}}
 {{- $githubUser := env "CHEZMOI_GITHUB_USER" -}}
+{{- $signingKey := env "CHEZMOI_GIT_SIGNING_KEY" -}}
 {{- $enablePersonal := true -}}
 
 {{- if $interactive -}}
@@ -34,6 +35,9 @@
 {{-   end -}}
 {{-   if and (not $githubUser) $interactive -}}
 {{-     $githubUser = promptString "GitHub username (Personal)" -}}
+{{-   end -}}
+{{-   if and (not $signingKey) $interactive -}}
+{{-     $signingKey = promptString "GPG Signing Key ID (Personal) [Optional, press Enter to skip]" -}}
 {{-   end -}}
 {{- end -}}
 
@@ -54,8 +58,9 @@
 {{-         $label := promptString (printf "Short label for Work %d (e.g. ghtk -> ~/.gitconfig-ghtk)" $idx) -}}
 {{-         $email := promptString (printf "Git email address for Work %d" $idx) -}}
 {{-         $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
+{{-         $workSigningKey := promptString (printf "GPG Signing Key ID for Work %d [Optional, press Enter to skip]" $idx) -}}
 {{-         $label = $label | lower | replace " " "-" -}}
-{{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $email "name" $name) -}}
+{{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $email "name" $name "signing_key" $workSigningKey) -}}
 {{-       end -}}
 {{-     end -}}
 {{-   else -}}
@@ -65,8 +70,9 @@
 {{-       $workLabel := env "CHEZMOI_WORK_GIT_LABEL" -}}
 {{-       $workEmail := env "CHEZMOI_WORK_GIT_EMAIL" -}}
 {{-       $workName := env "CHEZMOI_WORK_GIT_NAME" -}}
+{{-       $workSigningKey := env "CHEZMOI_WORK_GIT_SIGNING_KEY" -}}
 {{-       $workLabel = $workLabel | default "work-1" | lower | replace " " "-" -}}
-{{-       $workConfigs = append $workConfigs (dict "dir" $workGitDir "label" $workLabel "email" $workEmail "name" $workName) -}}
+{{-       $workConfigs = append $workConfigs (dict "dir" $workGitDir "label" $workLabel "email" $workEmail "name" $workName "signing_key" $workSigningKey) -}}
 {{-     end -}}
 {{-   end -}}
 {{- end -}}
@@ -86,11 +92,12 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     email = {{ printf "%q" $email }}
     github_user = {{ printf "%q" $githubUser }}
     name = {{ printf "%q" $name }}
+    signing_key = {{ printf "%q" $signingKey }}
     
     # Work Configurations
     work_configs = [
         {{- range $i, $config := $workConfigs }}
-        { dir = {{ printf "%q" $config.dir }}, label = {{ printf "%q" $config.label }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }} },
+        { dir = {{ printf "%q" $config.dir }}, label = {{ printf "%q" $config.label }}, name = {{ printf "%q" $config.name }}, email = {{ printf "%q" $config.email }}{{ if hasKey $config "signing_key" }}, signing_key = {{ printf "%q" $config.signing_key }}{{ end }} },
         {{- end }}
     ]
     enable_dock = {{ $enableDock }}

@@ -1,14 +1,22 @@
 {{- $name := get . "name" | default "" -}}
 {{- $email := get . "email" | default "" -}}
 {{- $githubUser := get . "github_user" | default "" -}}
-{{- if or $name $email $githubUser }}
-{{- if or $name $email }}
+{{- $signingKey := get . "signing_key" | default (get . "signingkey" | default "") -}}
+{{- if or $name $email $githubUser $signingKey }}
+{{- if or $name $email $signingKey }}
 [user]
 {{- if $name }}
   name = {{ $name }}
 {{- end }}
 {{- if $email }}
   email = {{ $email }}
+{{- end }}
+{{- if $signingKey }}
+  signingkey = {{ $signingKey }}
+[commit]
+  gpgsign = true
+[tag]
+  gpgsign = true
 {{- end }}
 
 {{- end }}

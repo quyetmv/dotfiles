@@ -17,6 +17,14 @@ cat > "$HOME/.gitconfig-{{ $label }}" <<EOF
 [user]
   name = {{ $config.name | default $.name }}
   email = {{ $config.email | default $.email }}
+{{- $signingKey := get $config "signing_key" | default (get $config "signingkey" | default "") }}
+{{- if $signingKey }}
+  signingkey = {{ $signingKey }}
+[commit]
+  gpgsign = true
+[tag]
+  gpgsign = true
+{{- end }}
 EOF
 expected_files+=("$HOME/.gitconfig-{{ $label }}")
 {{- end }}
