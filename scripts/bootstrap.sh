@@ -105,83 +105,109 @@ ensure_bw() {
     return 1
 }
 
+can_decrypt_secrets() {
+    [[ -s "$AGE_KEY" ]] || return 1
+    local test_file=""
+    [[ -n "${REPO_ROOT:-}" && -f "$REPO_ROOT/private_dot_secrets/encrypted_private_dot_private.age" ]] && test_file="$REPO_ROOT/private_dot_secrets/encrypted_private_dot_private.age"
+    [[ -z "$test_file" && -n "${SOURCE_DIR:-}" && -f "$SOURCE_DIR/private_dot_secrets/encrypted_private_dot_private.age" ]] && test_file="$SOURCE_DIR/private_dot_secrets/encrypted_private_dot_private.age"
+
+    if [[ -n "$test_file" ]]; then
+        chezmoi decrypt "$test_file" >/dev/null 2>&1
+    else
+        grep -q "AGE-SECRET-KEY-1" "$AGE_KEY" 2>/dev/null
+    fi
+}
+
 restore_age_key() {
-    # Interactive terminals only — CI/containers keep the skip behavior
+    local _BW_PORT=8087
+    local extracted_key=""
+
+    # 1. Try local REST server first (matches 60-devops.zsh / bwu, eliminates prompts & latency)
+    if curl -sf "http://localhost:${_BW_PORT}/status" 2>/dev/null | jq -e '.data.template.status == "unlocked"' >/dev/null 2>&1; then
+        log "Bitwarden local REST API active and unlocked. Fetching '$BW_KEY_ITEM'..."
+        local item_json
+        item_json="$(curl -sf "http://localhost:${_BW_PORT}/list/object/items?search=${BW_KEY_ITEM}" 2>/dev/null \
+            | jq -r --arg n "$BW_KEY_ITEM" '.data.data[] | select(.name == $n)' 2>/dev/null || true)"
+        if [[ -n "$item_json" && "$item_json" != "null" ]]; then
+            extracted_key="$(printf '%s\n' "$item_json" | jq -r '(.login.password // "") + "\n" + (.notes // "") + "\n" + (([.fields[]?.value] // []) | join("\n"))' 2>/dev/null | grep -oE 'AGE-SECRET-KEY-1[0-9A-Z]+' | head -n1 || true)"
+            if [[ -n "$extracted_key" ]]; then
+                mkdir -p "$(dirname "$AGE_KEY")"
+                printf '%s\n' "$extracted_key" > "$AGE_KEY"
+                chmod 600 "$AGE_KEY"
+                log "Age key restored from Bitwarden REST API to $AGE_KEY"
+                return 0
+            fi
+        fi
+    fi
+
+    # Interactive check for CLI prompt if REST API didn't succeed
     [[ -n "${CI:-}" ]] && return 1
     [[ -r /dev/tty && -w /dev/tty ]] || return 1
 
-    printf "Restore age key from Bitwarden (item '%s')? [y/N] " "$BW_KEY_ITEM" > /dev/tty
+    printf "Restore age key from Bitwarden CLI (item '%s')? [y/N] " "$BW_KEY_ITEM" > /dev/tty
     local ans; read -r ans < /dev/tty
     [[ "$ans" == "y" || "$ans" == "Y" ]] || return 1
 
     ensure_bw || { warn "Could not install bitwarden-cli."; return 1; }
 
-    export BW_SESSION
-    if bw login --check >/dev/null 2>&1; then
-        BW_SESSION="$(bw unlock --raw < /dev/tty)" || return 1
-    else
-        BW_SESSION="$(bw login --raw < /dev/tty)" || return 1
+    local bw_status
+    bw_status="$(bw status 2>/dev/null | jq -r '.status // empty' 2>/dev/null || true)"
+    if [[ "$bw_status" != "unlocked" ]]; then
+        export BW_SESSION
+        if [[ "$bw_status" == "locked" ]]; then
+            BW_SESSION="$(bw unlock --raw < /dev/tty)" || return 1
+        else
+            BW_SESSION="$(bw login --raw < /dev/tty)" || return 1
+        fi
     fi
     bw sync >/dev/null 2>&1 || true
 
-    mkdir -p "$(dirname "$AGE_KEY")"
-    local raw_item item_id
+    local raw_item
     raw_item="$(bw get item "$BW_KEY_ITEM" 2>/dev/null)" || raw_item=""
-
-    # 1. Password field
-    if bw get password "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
-        chmod 600 "$AGE_KEY"
-        log "Age key restored from Bitwarden password to $AGE_KEY"
-        return 0
-    fi
-
-    # 2. Notes field
-    if bw get notes "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
-        chmod 600 "$AGE_KEY"
-        log "Age key restored from Bitwarden notes to $AGE_KEY"
-        return 0
-    fi
-
-    # 3. Attached file or custom fields
     if [[ -n "$raw_item" ]]; then
-        item_id="$(printf '%s' "$raw_item" | jq -r '.id // empty' 2>/dev/null || true)"
-        if [[ -n "$item_id" ]]; then
-            local att_name
-            while IFS= read -r att_name; do
-                [[ -z "$att_name" ]] && continue
-                if bw get attachment "$att_name" --itemid "$item_id" --raw > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
-                    chmod 600 "$AGE_KEY"
-                    log "Age key restored from Bitwarden attachment '$att_name' to $AGE_KEY"
-                    return 0
-                fi
-            done < <(printf '%s' "$raw_item" | jq -r '.attachments[]?.fileName // empty' 2>/dev/null || true)
+        extracted_key="$(printf '%s\n' "$raw_item" | jq -r '(.login.password // "") + "\n" + (.notes // "") + "\n" + (([.fields[]?.value] // []) | join("\n"))' 2>/dev/null | grep -oE 'AGE-SECRET-KEY-1[0-9A-Z]+' | head -n1 || true)"
+
+        # Check attachments if not found in fields
+        if [[ -z "$extracted_key" ]]; then
+            local item_id
+            item_id="$(printf '%s' "$raw_item" | jq -r '.id // empty' 2>/dev/null || true)"
+            if [[ -n "$item_id" ]]; then
+                local att_name
+                while IFS= read -r att_name; do
+                    [[ -z "$att_name" ]] && continue
+                    local att_content
+                    att_content="$(bw get attachment "$att_name" --itemid "$item_id" --raw 2>/dev/null || true)"
+                    extracted_key="$(printf '%s\n' "$att_content" | grep -oE 'AGE-SECRET-KEY-1[0-9A-Z]+' | head -n1 || true)"
+                    [[ -n "$extracted_key" ]] && break
+                done < <(printf '%s' "$raw_item" | jq -r '.attachments[]?.fileName // empty' 2>/dev/null || true)
+            fi
         fi
 
-        local field_val
-        while IFS= read -r field_val; do
-            [[ -z "$field_val" ]] && continue
-            if printf '%s\n' "$field_val" | grep -q "AGE-SECRET-KEY-1"; then
-                printf '%s\n' "$field_val" > "$AGE_KEY"
-                chmod 600 "$AGE_KEY"
-                log "Age key restored from Bitwarden custom field to $AGE_KEY"
-                return 0
-            fi
-        done < <(printf '%s' "$raw_item" | jq -r '.fields[]?.value // empty' 2>/dev/null || true)
+        if [[ -n "$extracted_key" ]]; then
+            mkdir -p "$(dirname "$AGE_KEY")"
+            printf '%s\n' "$extracted_key" > "$AGE_KEY"
+            chmod 600 "$AGE_KEY"
+            log "Age key restored from Bitwarden CLI to $AGE_KEY"
+            return 0
+        fi
     fi
 
     rm -f "$AGE_KEY"
-    warn "Item '$BW_KEY_ITEM' not found in vault (or lacks an age key in password, notes, attachment, or custom fields)."
+    warn "Item '$BW_KEY_ITEM' found in vault but contains no valid AGE-SECRET-KEY-1."
     return 1
 }
 
 apply_args=(apply --force)
 [[ -n "$REPO_ROOT" ]] && apply_args+=(--source "$REPO_ROOT")
-if [[ ! -s "$AGE_KEY" ]] || ! grep -q "AGE-SECRET-KEY-1" "$AGE_KEY" 2>/dev/null; then
-    if ! restore_age_key; then
-        warn "No valid age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
-        warn "Restore the key, chmod 600 it, then run: chezmoi apply"
-        apply_args+=(--exclude=encrypted)
-    fi
+
+if ! can_decrypt_secrets; then
+    restore_age_key || true
+fi
+
+if ! can_decrypt_secrets; then
+    warn "No working age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
+    warn "Unlock Bitwarden (run 'bwu') or restore the key to $AGE_KEY (chmod 600), then run: make apply"
+    apply_args+=(--exclude=encrypted)
 fi
 
 # --- apply -------------------------------------------------------------------

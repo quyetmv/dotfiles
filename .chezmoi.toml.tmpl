@@ -76,6 +76,9 @@
 {{-         $label := promptString (printf "Short label for Work %d (e.g. comp%d -> ~/.gitconfig-comp%d)" $idx $idx $idx) $defaultLabel -}}
 {{-         $workEmail := promptString (printf "Git email address for Work %d" $idx) $defaultEmail -}}
 {{-         $workName := promptString (printf "Git full name for Work %d" $idx) $defaultName -}}
+{{-         if and (not $defaultSigningKey) (contains "ocn" $workEmail) -}}
+{{-           $defaultSigningKey = "4EB1EAD1D65D87F3" -}}
+{{-         end -}}
 {{-         $workSigningKey := promptString (printf "GPG Signing Key ID for Work %d [Optional, press Enter to skip]" $idx) $defaultSigningKey -}}
 {{-         $label = $label | lower | replace " " "-" -}}
 {{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $workEmail "name" $workName "signing_key" $workSigningKey) -}}

@@ -101,6 +101,80 @@ bwsshkey() {
   fi
 }
 
+# Chezmoi age decryption key from Bitwarden (item "chezmoi-age-key")
+bwagekey() {
+  local dest="${1:-$HOME/.config/chezmoi/chezmoi_private_key}"
+  _bw_ensure || return 1
+
+  local item
+  item="$(_bw_api "list/object/items?search=chezmoi-age-key" \
+    | jq -r '.data.data[] | select(.name == "chezmoi-age-key")' 2>/dev/null || true)"
+  [[ -n "$item" && "$item" != "null" ]] || { echo "bwagekey: 'chezmoi-age-key' not found in Bitwarden (run bwu?)"; return 1; }
+
+  local key
+  key="$(printf '%s\n' "$item" | jq -r '(.login.password // "") + "\n" + (.notes // "") + "\n" + (([.fields[]?.value] // []) | join("\n"))' 2>/dev/null | grep -oE 'AGE-SECRET-KEY-1[0-9A-Z]+' | head -n1 || true)"
+  [[ -n "$key" ]] || { echo "bwagekey: no AGE-SECRET-KEY-1 found in chezmoi-age-key item"; return 1; }
+
+  mkdir -p "$(dirname "$dest")"
+  printf '%s\n' "$key" > "$dest"
+  chmod 600 "$dest"
+  echo "age key: chezmoi-age-key → $dest"
+}
+
+# GPG key import from Bitwarden (item "GPG - <key-id>", e.g. "GPG - 4EB1EAD1D65D87F3")
+bwgpgkey() {
+  local key_id="${1:-4EB1EAD1D65D87F3}"
+  _bw_ensure || return 1
+
+  local item
+  item="$(_bw_api "list/object/items?search=GPG+-+$key_id" \
+    | jq -r --arg n "GPG - $key_id" '.data.data[] | select(.name == $n)' 2>/dev/null || true)"
+  if [[ -z "$item" || "$item" == "null" ]]; then
+    item="$(_bw_api "list/object/items?search=$key_id" \
+      | jq -r --arg id "$key_id" '.data.data[] | select(.name | contains($id))' 2>/dev/null || true)"
+  fi
+  [[ -n "$item" && "$item" != "null" ]] || { echo "bwgpgkey: 'GPG - $key_id' not found in Bitwarden (run bwu?)"; return 1; }
+
+  local priv pub
+  priv="$(printf '%s' "$item" | jq -r '.fields[]? | select(.name | contains("SECRET")) | .value' 2>/dev/null || true)"
+  pub="$(printf '%s' "$item" | jq -r '.fields[]? | select(.name | contains("PUBLIC")) | .value' 2>/dev/null || true)"
+  [[ -n "$priv" && "$priv" != "null" ]] || { echo "bwgpgkey: secret key field missing on item"; return 1; }
+
+  _awk_format_pgp() {
+    awk '{
+      for (i = 1; i <= NF; i++) {
+        if ($i == "-----BEGIN") {
+          hdr = $i; while (i <= NF && substr($i, length($i)-4) != "-----") { i++; hdr = hdr " " $i; }
+          print hdr "\n";
+        } else if ($i == "-----END") {
+          ftr = $i; while (i <= NF && substr($i, length($i)-4) != "-----") { i++; ftr = ftr " " $i; }
+          print ftr;
+        } else {
+          print $i;
+        }
+      }
+    }' <<< "$1"
+  }
+
+  # Import public key if present
+  if [[ -n "$pub" && "$pub" != "null" ]]; then
+    _awk_format_pgp "$pub" | gpg --batch --import >/dev/null 2>&1 || true
+  fi
+
+  # Import secret key
+  if _awk_format_pgp "$priv" | gpg --batch --import; then
+    local fpr
+    fpr="$(gpg --list-secret-keys --with-colons "$key_id" 2>/dev/null | grep "^fpr" | head -n1 | cut -d: -f10 || true)"
+    if [[ -n "$fpr" ]]; then
+      (echo "${fpr}:6:") | gpg --import-ownertrust >/dev/null 2>&1 || true
+    fi
+    echo "gpg key: GPG - $key_id imported and trusted successfully"
+  else
+    echo "bwgpgkey: failed to import secret key"
+    return 1
+  fi
+}
+
 # SSH bastions (chezmoi-managed, age-encrypted at
 # private_dot_ssh/private_conf.d/encrypted_bastions.age -> ~/.ssh/conf.d/bastions)
 bastion-list() {
