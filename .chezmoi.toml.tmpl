@@ -6,14 +6,14 @@
 {{- $enableMacKeybindings := eq (env "CHEZMOI_ENABLE_MAC_KEYBINDINGS") "1" -}}
 {{- if $interactive -}}
 {{-   if eq .chezmoi.os "darwin" -}}
-{{-     $enableDock = promptBool "Enable Dock customization?" -}}
-{{-     $enableMasApps = promptBool "Enable Mac App Store apps?" -}}
-{{-     $enablePersonalApps = promptBool "Enable personal apps (evkey, Telegram, etc.)?" -}}
+{{-     $enableDock = promptBool "Enable Dock customization?" (get . "enable_dock" | default false) -}}
+{{-     $enableMasApps = promptBool "Enable Mac App Store apps?" (get . "enable_mas_apps" | default false) -}}
+{{-     $enablePersonalApps = promptBool "Enable personal apps (evkey, Telegram, etc.)?" (get . "enable_personal_apps" | default true) -}}
 {{-   end -}}
 {{-   if eq .chezmoi.os "linux" -}}
-{{-     $enableMacKeybindings = promptBool "Map macOS-style keybindings in Terminator (Cmd+T/W/C/V/...)?" -}}
+{{-     $enableMacKeybindings = promptBool "Map macOS-style keybindings in Terminator (Cmd+T/W/C/V/...)?" (get . "enable_mac_keybindings" | default false) -}}
 {{-   end -}}
-{{-   $enableSshKeygen = promptBool "Generate SSH key?" -}}
+{{-   $enableSshKeygen = promptBool "Generate SSH key?" (get . "enable_ssh_keygen" | default false) -}}
 {{- end -}}
 
 {{- $email := env "CHEZMOI_GIT_EMAIL" -}}
@@ -23,44 +23,62 @@
 {{- $enablePersonal := true -}}
 
 {{- if $interactive -}}
-{{-   $enablePersonal = promptBool "Do you want to configure a personal Git account? (y/n)" -}}
+{{-   $enablePersonal = promptBool "Do you want to configure a personal Git account? (y/n)" (hasKey . "email") -}}
 {{- end -}}
 
 {{- if $enablePersonal -}}
 {{-   if and (not $email) $interactive -}}
-{{-     $email = promptString "Git email address (Personal)" -}}
+{{-     $email = promptString "Git email address (Personal)" (get . "email" | default "") -}}
 {{-   end -}}
 {{-   if and (not $name) $interactive -}}
-{{-     $name = promptString "Git full name (Personal)" -}}
+{{-     $name = promptString "Git full name (Personal)" (get . "name" | default "") -}}
 {{-   end -}}
 {{-   if and (not $githubUser) $interactive -}}
-{{-     $githubUser = promptString "GitHub username (Personal)" -}}
+{{-     $githubUser = promptString "GitHub username (Personal)" (get . "github_user" | default "") -}}
 {{-   end -}}
 {{-   if and (not $signingKey) $interactive -}}
-{{-     $signingKey = promptString "GPG Signing Key ID (Personal) [Optional, press Enter to skip]" -}}
+{{-     $signingKey = promptString "GPG Signing Key ID (Personal) [Optional, press Enter to skip]" (get . "signing_key" | default "") -}}
 {{-   end -}}
 {{- end -}}
 
 {{- $workConfigs := list -}}
+{{- $existingWork := list -}}
+{{- if hasKey . "work_configs" -}}
+{{-   $existingWork = .work_configs -}}
+{{- end -}}
 {{- $enableWork := true -}}
 {{- if $interactive -}}
-{{-   $enableWork = promptBool "Do you want to configure Work Git accounts? (y/n)" -}}
+{{-   $enableWork = promptBool "Do you want to configure Work Git accounts? (y/n)" (gt (len $existingWork) 0) -}}
 {{- end -}}
 
 {{- if $enableWork -}}
 {{-   if $interactive -}}
-{{-     $workCount := promptInt "How many work configurations do you have? (0, 1, 2...)" -}}
+{{-     $defaultWorkCount := len $existingWork | int64 -}}
+{{-     $workCount := promptInt "How many work configurations do you have? (e.g. 1 or 2)" $defaultWorkCount -}}
 {{-     $workCountInt := int $workCount -}}
 {{-     if gt $workCountInt 0 -}}
 {{-       range $i := until $workCountInt -}}
 {{-         $idx := add $i 1 -}}
-{{-         $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/company%d)" $idx $idx) -}}
-{{-         $label := promptString (printf "Short label for Work %d (e.g. ghtk -> ~/.gitconfig-ghtk)" $idx) -}}
-{{-         $email := promptString (printf "Git email address for Work %d" $idx) -}}
-{{-         $name := promptString (printf "Git full name for Work %d [Default: same as Personal]" $idx) -}}
-{{-         $workSigningKey := promptString (printf "GPG Signing Key ID for Work %d [Optional, press Enter to skip]" $idx) -}}
+{{-         $defaultDir := printf "~/company%d" $idx -}}
+{{-         $defaultLabel := printf "work-%d" $idx -}}
+{{-         $defaultEmail := "" -}}
+{{-         $defaultName := $name -}}
+{{-         $defaultSigningKey := "" -}}
+{{-         if lt $i (len $existingWork) -}}
+{{-           $ex := index $existingWork $i -}}
+{{-           if hasKey $ex "dir" }}{{ if $ex.dir }}{{ $defaultDir = $ex.dir }}{{ end }}{{ end -}}
+{{-           if hasKey $ex "label" }}{{ if $ex.label }}{{ $defaultLabel = $ex.label }}{{ end }}{{ end -}}
+{{-           if hasKey $ex "email" }}{{ if $ex.email }}{{ $defaultEmail = $ex.email }}{{ end }}{{ end -}}
+{{-           if hasKey $ex "name" }}{{ if $ex.name }}{{ $defaultName = $ex.name }}{{ end }}{{ end -}}
+{{-           if hasKey $ex "signing_key" }}{{ if $ex.signing_key }}{{ $defaultSigningKey = $ex.signing_key }}{{ end }}{{ end -}}
+{{-         end -}}
+{{-         $dir := promptString (printf "DIRECTORY for Work %d" $idx) $defaultDir -}}
+{{-         $label := promptString (printf "Short label for Work %d (e.g. comp%d -> ~/.gitconfig-comp%d)" $idx $idx $idx) $defaultLabel -}}
+{{-         $workEmail := promptString (printf "Git email address for Work %d" $idx) $defaultEmail -}}
+{{-         $workName := promptString (printf "Git full name for Work %d" $idx) $defaultName -}}
+{{-         $workSigningKey := promptString (printf "GPG Signing Key ID for Work %d [Optional, press Enter to skip]" $idx) $defaultSigningKey -}}
 {{-         $label = $label | lower | replace " " "-" -}}
-{{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $email "name" $name "signing_key" $workSigningKey) -}}
+{{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $workEmail "name" $workName "signing_key" $workSigningKey) -}}
 {{-       end -}}
 {{-     end -}}
 {{-   else -}}

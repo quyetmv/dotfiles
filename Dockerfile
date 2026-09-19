@@ -21,7 +21,7 @@ RUN touch ~/.zshrc
 
 # Set chezmoi env vars
 ENV CHEZMOI_GIT_NAME="Ma Van Quyet"
-ENV CHEZMOI_GIT_EMAIL="quyetmv@ghtk.co"
+ENV CHEZMOI_GIT_EMAIL="quyetmv@gmail.com"
 ENV CHEZMOI_GITHUB_USER="quyetmv"
 # docker build has no TTY; CI=1 makes .chezmoi.toml.tmpl skip promptBool/promptString
 ENV CI=1

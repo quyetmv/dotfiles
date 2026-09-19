@@ -125,21 +125,60 @@ restore_age_key() {
     bw sync >/dev/null 2>&1 || true
 
     mkdir -p "$(dirname "$AGE_KEY")"
-    # Item is a Login whose password field holds the AGE-SECRET-KEY line
+    local raw_item item_id
+    raw_item="$(bw get item "$BW_KEY_ITEM" 2>/dev/null)" || raw_item=""
+
+    # 1. Password field
     if bw get password "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
         chmod 600 "$AGE_KEY"
-        log "Age key restored to $AGE_KEY"
+        log "Age key restored from Bitwarden password to $AGE_KEY"
         return 0
     fi
+
+    # 2. Notes field
+    if bw get notes "$BW_KEY_ITEM" > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
+        chmod 600 "$AGE_KEY"
+        log "Age key restored from Bitwarden notes to $AGE_KEY"
+        return 0
+    fi
+
+    # 3. Attached file or custom fields
+    if [[ -n "$raw_item" ]]; then
+        item_id="$(printf '%s' "$raw_item" | jq -r '.id // empty' 2>/dev/null || true)"
+        if [[ -n "$item_id" ]]; then
+            local att_name
+            while IFS= read -r att_name; do
+                [[ -z "$att_name" ]] && continue
+                if bw get attachment "$att_name" --itemid "$item_id" --raw > "$AGE_KEY" 2>/dev/null && grep -q "AGE-SECRET-KEY-1" "$AGE_KEY"; then
+                    chmod 600 "$AGE_KEY"
+                    log "Age key restored from Bitwarden attachment '$att_name' to $AGE_KEY"
+                    return 0
+                fi
+            done < <(printf '%s' "$raw_item" | jq -r '.attachments[]?.fileName // empty' 2>/dev/null || true)
+        fi
+
+        local field_val
+        while IFS= read -r field_val; do
+            [[ -z "$field_val" ]] && continue
+            if printf '%s\n' "$field_val" | grep -q "AGE-SECRET-KEY-1"; then
+                printf '%s\n' "$field_val" > "$AGE_KEY"
+                chmod 600 "$AGE_KEY"
+                log "Age key restored from Bitwarden custom field to $AGE_KEY"
+                return 0
+            fi
+        done < <(printf '%s' "$raw_item" | jq -r '.fields[]?.value // empty' 2>/dev/null || true)
+    fi
+
     rm -f "$AGE_KEY"
-    warn "Item '$BW_KEY_ITEM' not found in vault (or password field lacks an age key)."
+    warn "Item '$BW_KEY_ITEM' not found in vault (or lacks an age key in password, notes, attachment, or custom fields)."
     return 1
 }
 
-apply_args=(apply)
-if [[ ! -f "$AGE_KEY" ]]; then
+apply_args=(apply --force)
+[[ -n "$REPO_ROOT" ]] && apply_args+=(--source "$REPO_ROOT")
+if [[ ! -s "$AGE_KEY" ]] || ! grep -q "AGE-SECRET-KEY-1" "$AGE_KEY" 2>/dev/null; then
     if ! restore_age_key; then
-        warn "No age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
+        warn "No valid age key at $AGE_KEY — skipping encrypted secrets (~/.secrets/.private)."
         warn "Restore the key, chmod 600 it, then run: chezmoi apply"
         apply_args+=(--exclude=encrypted)
     fi

@@ -23,7 +23,7 @@ sync: ## Sync Homebrew and mise packages
 
 CHEZMOI_EXE := $(shell command -v chezmoi 2>/dev/null || echo ./bin/chezmoi)
 # No age key -> skip encrypted secrets instead of aborting mid-apply
-CHEZMOI_EXCLUDE := $(shell [ -f "$(HOME)/.config/chezmoi/chezmoi_private_key" ] || echo --exclude=encrypted)
+CHEZMOI_EXCLUDE := $(shell [ -s "$(HOME)/.config/chezmoi/chezmoi_private_key" ] && grep -q "AGE-SECRET-KEY-1" "$(HOME)/.config/chezmoi/chezmoi_private_key" 2>/dev/null || echo --exclude=encrypted)
 
 apply: ## Apply dotfiles with Chezmoi
 	@[ -z "$(CHEZMOI_EXCLUDE)" ] || echo "⚠️  No age key at ~/.config/chezmoi/chezmoi_private_key — skipping encrypted secrets"
