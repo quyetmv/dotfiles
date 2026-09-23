@@ -7,6 +7,7 @@
 
 [settings]
 auto_install = true
+trusted_config_paths = ["~/workspace"]
 # Auto-detect versions from project files
 idiomatic_version_file_enable_tools = ["node", "go", "python"]
 
@@ -14,7 +15,7 @@ idiomatic_version_file_enable_tools = ["node", "go", "python"]
 # Core languages and Python workflow
 node = "22.21.0"
 python = "3.12"
-go = "1.24"
+go = "1.26.7"
 uv = "latest"
 
 # Infrastructure and cloud

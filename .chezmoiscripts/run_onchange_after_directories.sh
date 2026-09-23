@@ -13,13 +13,15 @@ else
     echo "  ✓ ~/workspace already exists"
 fi
 
-# Create labs directory
-if [ ! -d "$HOME/workspace/labs" ]; then
-    mkdir -p "$HOME/workspace/labs"
-    echo "  ✓ Created ~/workspace/labs"
-else
-    echo "  ✓ ~/workspace/labs already exists"
-fi
+# Create standard workspace subdirectories
+for subdir in personal labs; do
+    if [ ! -d "$HOME/workspace/$subdir" ]; then
+        mkdir -p "$HOME/workspace/$subdir"
+        echo "  ✓ Created ~/workspace/$subdir"
+    else
+        echo "  ✓ ~/workspace/$subdir already exists"
+    fi
+done
 
 echo "✓ Workspace directories ready"
 

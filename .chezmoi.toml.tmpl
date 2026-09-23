@@ -36,8 +36,8 @@
 {{-   if and (not $githubUser) $interactive -}}
 {{-     $githubUser = promptString "GitHub username (Personal)" (get . "github_user" | default "") -}}
 {{-   end -}}
-{{-   if and (not $signingKey) $interactive -}}
-{{-     $signingKey = promptString "GPG Signing Key ID (Personal) [Optional, press Enter to skip]" (get . "signing_key" | default "") -}}
+{{-   if not $signingKey -}}
+{{-     $signingKey = get . "signing_key" | default "" -}}
 {{-   end -}}
 {{- end -}}
 
@@ -59,28 +59,31 @@
 {{-     if gt $workCountInt 0 -}}
 {{-       range $i := until $workCountInt -}}
 {{-         $idx := add $i 1 -}}
-{{-         $defaultDir := printf "~/company%d" $idx -}}
 {{-         $defaultLabel := printf "work-%d" $idx -}}
+{{-         $defaultDir := printf "~/workspace/work-%d" $idx -}}
 {{-         $defaultEmail := "" -}}
 {{-         $defaultName := $name -}}
 {{-         $defaultSigningKey := "" -}}
 {{-         if lt $i (len $existingWork) -}}
 {{-           $ex := index $existingWork $i -}}
 {{-           if hasKey $ex "dir" }}{{ if $ex.dir }}{{ $defaultDir = $ex.dir }}{{ end }}{{ end -}}
-{{-           if hasKey $ex "label" }}{{ if $ex.label }}{{ $defaultLabel = $ex.label }}{{ end }}{{ end -}}
+{{-           if hasKey $ex "label" }}{{ if $ex.label }}{{ $defaultLabel = $ex.label }}{{ end }}{{ else if hasKey $ex "dir" }}{{ if $ex.dir }}{{ $defaultLabel = base $ex.dir }}{{ end }}{{ end -}}
 {{-           if hasKey $ex "email" }}{{ if $ex.email }}{{ $defaultEmail = $ex.email }}{{ end }}{{ end -}}
 {{-           if hasKey $ex "name" }}{{ if $ex.name }}{{ $defaultName = $ex.name }}{{ end }}{{ end -}}
 {{-           if hasKey $ex "signing_key" }}{{ if $ex.signing_key }}{{ $defaultSigningKey = $ex.signing_key }}{{ end }}{{ end -}}
 {{-         end -}}
-{{-         $dir := promptString (printf "DIRECTORY for Work %d" $idx) $defaultDir -}}
-{{-         $label := promptString (printf "Short label for Work %d (e.g. comp%d -> ~/.gitconfig-comp%d)" $idx $idx $idx) $defaultLabel -}}
+{{-         $label := promptString (printf "Short label for Work %d (e.g. ocn, ghtk -> ~/.gitconfig-<label>)" $idx) $defaultLabel -}}
+{{-         $label = $label | lower | replace " " "-" -}}
+{{-         if eq $defaultDir (printf "~/workspace/work-%d" $idx) -}}
+{{-           $defaultDir = printf "~/workspace/%s" $label -}}
+{{-         end -}}
+{{-         $dir := promptString (printf "DIRECTORY for Work %d (e.g. ~/workspace/%s)" $idx $label) $defaultDir -}}
 {{-         $workEmail := promptString (printf "Git email address for Work %d" $idx) $defaultEmail -}}
 {{-         $workName := promptString (printf "Git full name for Work %d" $idx) $defaultName -}}
-{{-         if and (not $defaultSigningKey) (contains "ocn" $workEmail) -}}
-{{-           $defaultSigningKey = "4EB1EAD1D65D87F3" -}}
+{{-         $workSigningKey := $defaultSigningKey -}}
+{{-         if and (not $workSigningKey) (or (contains "ocn" $workEmail) (contains "ocn" $label) (contains "ocn" $dir)) -}}
+{{-           $workSigningKey = "4EB1EAD1D65D87F3" -}}
 {{-         end -}}
-{{-         $workSigningKey := promptString (printf "GPG Signing Key ID for Work %d [Optional, press Enter to skip]" $idx) $defaultSigningKey -}}
-{{-         $label = $label | lower | replace " " "-" -}}
 {{-         $workConfigs = append $workConfigs (dict "dir" $dir "label" $label "email" $workEmail "name" $workName "signing_key" $workSigningKey) -}}
 {{-       end -}}
 {{-     end -}}
