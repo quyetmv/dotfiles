@@ -57,3 +57,8 @@ ansible.cfg
 bin/chezmoi
 dotfiles/
 references/
+
+# Vault CA SSH signing (opt-in: CHEZMOI_ENABLE_VAULT_SSH=1)
+{{ if not (get . "enable_vault_ssh" | default false) }}
+.local/bin/vault-ssh-sign.sh
+{{ end }}

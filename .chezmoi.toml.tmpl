@@ -4,6 +4,7 @@
 {{- $enablePersonalApps := eq (env "CHEZMOI_ENABLE_PERSONAL_APPS") "1" -}}
 {{- $enableSshKeygen := eq (env "CHEZMOI_ENABLE_SSH_KEYGEN") "1" -}}
 {{- $enableMacKeybindings := eq (env "CHEZMOI_ENABLE_MAC_KEYBINDINGS") "1" -}}
+{{- $enableVaultSsh := or (eq (env "CHEZMOI_ENABLE_VAULT_SSH") "1") (get . "enable_vault_ssh" | default false) -}}
 {{- if $interactive -}}
 {{-   if eq .chezmoi.os "darwin" -}}
 {{-     $enableDock = promptBool "Enable Dock customization?" (get . "enable_dock" | default false) -}}
@@ -129,6 +130,7 @@ sourceDir = {{ .chezmoi.sourceDir | quote }}
     enable_personal_apps = {{ $enablePersonalApps }}
     enable_ssh_keygen = {{ $enableSshKeygen }}
     enable_mac_keybindings = {{ $enableMacKeybindings }}
+    enable_vault_ssh = {{ $enableVaultSsh }}
 
 [apply]
     backup = true
