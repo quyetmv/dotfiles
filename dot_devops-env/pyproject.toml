@@ -36,6 +36,7 @@ dependencies = [
     "neural-memory>=2.23.0",
     "kioku-lite[cli]",
     "notebooklm-mcp-cli",
+    "claude-swap"
 ]
 
 [tool.uv]
